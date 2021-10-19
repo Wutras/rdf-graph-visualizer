@@ -1,0 +1,5 @@
+.footer {
+    height: var(--header-footer-height);
+    background-color: var(--primary-color);
+    display: grid;
+}

@@ -1,0 +1,8 @@
+.header {
+    height: var(--header-footer-height);
+    background-color: var(--primary-color);
+    padding-top: 1rem;
+    font-size: x-large;
+    word-break: keep-all;
+    white-space: nowrap;
+}

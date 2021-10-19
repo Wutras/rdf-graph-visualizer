@@ -1,0 +1,30 @@
+.circular-button {
+    height: 100%;
+    aspect-ratio: 1 / 1;
+    border-radius: 50%;
+    background-color: var(--primary-color);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0px 0px 8px -2px #000000;
+    transition: transform 0.2s;
+}
+
+.circular-button:active {
+    transform: rotate(-90deg);
+}
+
+.half-circle {
+    position: relative;
+    top: -75%;
+    border-radius: 50%;
+    height: 75%;
+    aspect-ratio: 1 / 1;
+    background-color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    justify-self: end;
+    margin-right: 2rem;
+    padding: 1rem;
+}
