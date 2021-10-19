@@ -1,0 +1,7 @@
+.settings-view {
+    display: flex;
+    flex-flow: column;
+    align-items: center;
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+}

@@ -1,0 +1,24 @@
+.input-field {
+    margin: 2rem;
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.input-field > .prompt {
+    flex-basis: 10%;
+    font-size: x-large;
+    flex-grow: 3.1;
+    margin-left: 2rem;
+    margin-right: 1rem;
+}
+
+.input-field > .text-input {
+    flex-basis: 80%;
+    flex-grow: 1.25;
+    margin-right: 2rem;
+    margin-left: 1rem;
+    border-radius: 10px;
+    border: 2px solid rgba(0, 0, 0, 20%);
+    padding: 0.5rem;
+}
