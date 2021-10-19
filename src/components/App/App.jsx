@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Footer, Header, Main, SettingsView } from "..";
-import validateRDFPrefixes from "../../helpers/prefixValidator";
+import { validateRDFPrefixes } from "../../helpers/rdf-utils";
 import "./App.css";
 
 function App() {
