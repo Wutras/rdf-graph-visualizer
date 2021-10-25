@@ -1,10 +1,6 @@
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Footer, Header, Main } from "..";
-import {
-  applyPrefixesToStatement,
-  parseTtlPrefixes,
-  validateRDFPrefixes,
-} from "../../helpers/rdf-utils";
+import { validateRDFPrefixes } from "../../helpers/rdf-utils";
 import { fetchAllTriples } from "../../services/sparqlEndpoint.service";
 import "./App.css";
 
@@ -26,16 +22,36 @@ function App() {
     JSON.parse(localStorage.getItem("prefixes")) ?? ""
   );
   const [graphData, setGraphData] = useState();
+  const [nodeCapacity, setNodeCapacity] = useState(
+    JSON.parse(localStorage.getItem("nodeCapacity")) ?? 10
+  );
 
-  async function saveSettings() {
+  const loadGraphData = useCallback(async () => {
     if (
       JSON.parse(localStorage.getItem("sparqlEndpoint")) !== sparqlEndpoint ||
       JSON.parse(localStorage.getItem("username")) !== username ||
       JSON.parse(sessionStorage.getItem("password")) !== password ||
+      JSON.parse(sessionStorage.getItem("nodeCapacity")) !== nodeCapacity ||
       graphData == null
     ) {
-      setGraphData(await fetchAllTriples(sparqlEndpoint, graphURI));
+      try {
+        const tripleStore = await fetchAllTriples(
+          sparqlEndpoint,
+          graphURI,
+          username,
+          password
+        );
+        setGraphData(tripleStore);
+      } catch (errorMessage) {
+        console.error(errorMessage);
+        setView("settings");
+        return;
+      }
     }
+  }, [sparqlEndpoint, password, username, graphURI, graphData, nodeCapacity]);
+
+  async function saveSettings() {
+    loadGraphData();
 
     localStorage.setItem("sparqlEndpoint", JSON.stringify(sparqlEndpoint));
     localStorage.setItem("username", JSON.stringify(username));
@@ -43,6 +59,7 @@ function App() {
     localStorage.setItem("prefixes", JSON.stringify(prefixes));
 
     sessionStorage.setItem("password", JSON.stringify(password));
+    sessionStorage.setItem("nodeCapacity", JSON.stringify(nodeCapacity));
   }
 
   const validSettingsExist =
@@ -50,38 +67,15 @@ function App() {
     username.length > 0 &&
     password.length > 0 &&
     graphURI.length > 0 &&
+    !Number.isNaN(nodeCapacity) &&
     validateRDFPrefixes(prefixes);
 
   if (!validSettingsExist && view !== "settings") setView("settings");
 
-  const formattedGraphData =
-    graphData != null && validateRDFPrefixes(prefixes)
-      ? {
-          ...graphData,
-          links: graphData.links.map((link) => {
-            let formattedLink = {};
-            Object.keys(link).forEach(
-              (linkKey) =>
-                (formattedLink[linkKey] = applyPrefixesToStatement(
-                  link[linkKey],
-                  parseTtlPrefixes(prefixes)
-                ))
-            );
-            return formattedLink;
-          }),
-          nodes: graphData.nodes.map((node) => {
-            let formattedNode = {};
-            Object.keys(node).forEach(
-              (nodeKey) =>
-                (formattedNode[nodeKey] = applyPrefixesToStatement(
-                  node[nodeKey],
-                  parseTtlPrefixes(prefixes)
-                ))
-            );
-            return formattedNode;
-          }),
-        }
-      : null;
+  useEffect(() => {
+    console.log("Mounted!");
+    loadGraphData();
+  }, []);
 
   return (
     <div className="app">
@@ -108,9 +102,13 @@ function App() {
             value: prefixes,
             setter: setPrefixes,
           },
+          nodeCapacity: {
+            value: nodeCapacity,
+            setter: setNodeCapacity,
+          },
         }}
         view={view}
-        graphData={formattedGraphData}
+        graphData={graphData}
       />
       <Footer
         setView={setView}

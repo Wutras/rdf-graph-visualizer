@@ -11,6 +11,7 @@
 
 .circular-button.active {
     background-color: var(--primary-color);
+    cursor: pointer;
 }
 
 .circular-button.inactive {

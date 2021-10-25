@@ -1,0 +1,19 @@
+#info-box {
+    background-color: aliceblue;
+    border-radius: 10px;
+    position: absolute;
+    left: 25%;
+    top: 25%;
+    width: 50%;
+    height: fit-content;
+    padding: 1rem;
+    box-shadow: 0px 0px 8px -2px #000000;
+}
+
+#info-box > .circular-button {
+    position: absolute;
+    width: 3vw;
+    right: -1vw;
+    top: -1vw;
+    height: unset;
+}

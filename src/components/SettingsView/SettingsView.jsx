@@ -39,6 +39,12 @@ PREFIX oa: <http://www.w3.org/ns/openannotation/core/>`}
         onChange={(cE) => settings.prefixes.setter(cE.target.value)}
         value={settings.prefixes.value}
       />
+      <InputField
+        prompt="Node Capacity"
+        placeholder="10"
+        onChange={(cE) => settings.nodeCapacity.setter(cE.target.value)}
+        value={settings.nodeCapacity.value}
+      />
     </div>
   );
 }

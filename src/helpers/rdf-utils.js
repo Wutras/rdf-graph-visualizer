@@ -3,7 +3,7 @@ Helper/internal functions
 */
 
 function isValidTtlPrefix(prefix) {
-  return /^(PREFIX\s+\w*:\s*<[^>]*>|\@prefix\s+\w*:\s*<[^>]*>\s*\.)$/i.test(
+  return /^(PREFIX\s+\w*:\s*<[^>]*>|@prefix\s+\w*:\s*<[^>]*>\s*\.)$/i.test(
     prefix.trim()
   );
 }
@@ -12,7 +12,7 @@ function parseTtlPrefix(prefix) {
   const matches = prefix
     .trim()
     .match(
-      /^(PREFIX\s+(\w*:)\s*<([^>]*)>|\@prefix\s+(\w*:)\s*<([^>]*)>\s*\.)$/i
+      /^(PREFIX\s+(\w*:)\s*<([^>]*)>|@prefix\s+(\w*:)\s*<([^>]*)>\s*\.)$/i
     );
 
   return matches[2] && matches[3]

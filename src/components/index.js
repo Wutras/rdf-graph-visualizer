@@ -6,3 +6,4 @@ export { default as CircularIconButton } from "./CircularIconButton/CircularIcon
 export { default as SettingsView } from "./SettingsView/SettingsView";
 export { default as InputField } from "./InputField/InputField";
 export { default as RdfGraph } from "./RdfGraph/RdfGraph";
+export { default as InfoBox } from "./InfoBox/InfoBox";
