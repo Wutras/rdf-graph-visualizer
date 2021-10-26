@@ -26,6 +26,11 @@ function parseTtlPrefix(prefix) {
       };
 }
 
+
+/*
+Exported functions
+*/
+
 export function applyPrefixesToStatement(statement, prefixes) {
   if (typeof statement !== "string") return statement;
   let shortenedStatement = statement;
@@ -36,11 +41,15 @@ export function applyPrefixesToStatement(statement, prefixes) {
   return shortenedStatement;
 }
 
-window.applyPrefixesToStatement = applyPrefixesToStatement;
+export function resolvePrefixesInStatement(statement, prefixes) {
+  if (typeof statement !== "string") return statement;
+  let resolvedStatement = statement;
+  for (const prefix of prefixes) {
+    resolvedStatement = resolvedStatement.replaceAll(prefix.prefix, prefix.uri);
+  }
 
-/*
-Exported functions
-*/
+  return resolvedStatement;
+}
 
 export function validateRDFPrefixes(prefixes) {
   const prefixArr = prefixes.split("\n");

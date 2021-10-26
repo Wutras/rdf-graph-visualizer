@@ -33,8 +33,16 @@ export default function RdfGraph({ graphData, prefixes, nodeCapacity }) {
     if (graphData != null) redrawGraph();
   }, [graphData]);
 
-  return <>
-  <svg className={"hsa-rdf-graph"} />
-      <InfoBox infoMessages={infoMessage} visible={infoBoxVisible} setVisible={setInfoBoxVisible}/>
-  </>;
+  return (
+    <>
+      <svg className={"hsa-rdf-graph"} />
+      <InfoBox
+        type={infoMessage?.type}
+        value={infoMessage?.value}
+        prefixes={prefixes}
+        visible={infoBoxVisible}
+        setVisible={setInfoBoxVisible}
+      />
+    </>
+  );
 }

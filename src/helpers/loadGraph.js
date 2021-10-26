@@ -7,7 +7,7 @@ export function loadGraph(graphData, prefixes, nodeCapacity, showInfo) {
     width = document.querySelector(".hsa-rdf-graph").clientWidth,
     height = document.querySelector(".hsa-rdf-graph").clientHeight,
     padding = 0,
-    margin = 10,
+    margin = 0,
     maxTextLength = 32, // 32 is perfect if nodeRadiusFactor is 5
     nodeRadiusFactor = 5, // 5 is perfect for regular text
     minNodeRadius = 20,
@@ -163,13 +163,17 @@ export function loadGraph(graphData, prefixes, nodeCapacity, showInfo) {
     .data(nodes)
     .enter()
     .append("g")
-    .on("click", (d) =>
-      showInfo([`Type: ${d.rdfType}`, `Value: ${d.rdfValue}`])
-    );
+    .on("click", (d) => {
+      showInfo({ type: d.rdfType, value: d.rdfValue });
+      d.isHighlightedFixed = !d.isHighlightedFixed;
+    })
+    .on("mouseover", (d) => d.isHighlighted = true)
+    .on("mouseout", (d) => d.isHighlighted = false);
 
-  const circle = node
-    .append("circle")
-    .attr("r", (d) => d.radius - margin)
+  const rectangle = node
+    .append("rect")
+    .attr("width", (d) => d.radius - margin)
+    .attr("height", (d) => d.radius - margin)
     .attr("fill", getColour);
 
   const drag_handler = d3
@@ -199,47 +203,69 @@ export function loadGraph(graphData, prefixes, nodeCapacity, showInfo) {
 
   function ticked() {
     node
-      .attr("cx", function (d) {
+      .attr("x", function (d) {
         return Math.max(d.radius, Math.min(width - d.radius, d.x));
       })
-      .attr("cy", function (d) {
+      .attr("y", function (d) {
         return Math.max(d.radius, Math.min(height - d.radius, d.y));
       });
 
     link
-      .attr("x1", (d) => d.source.x + zoomOffset.x)
-      .attr("y1", (d) => d.source.y + zoomOffset.y)
-      .attr("x2", (d) => d.target.x + zoomOffset.x)
-      .attr("y2", (d) => d.target.y + zoomOffset.y);
+      .attr(
+        "stroke", (d) => d.target.isHighlighted || d.source.isHighlighted || d.target.isHighlightedFixed || d.source.isHighlightedFixed ? "#F00" : "#000"
+      )
+      .attr(
+        "stroke-width", (d) => d.target.isHighlighted || d.source.isHighlighted || d.target.isHighlightedFixed || d.source.isHighlightedFixed ? "5px" : "0.5px"
+      )
+      .attr(
+        "x1",
+        (d) => d.source.x + (d.source.radius / 2) * zoomOffset.z + zoomOffset.x
+      )
+      .attr(
+        "y1",
+        (d) => d.source.y + (d.source.radius / 2) * zoomOffset.z + zoomOffset.y
+      )
+      .attr(
+        "x2",
+        (d) => d.target.x + (d.target.radius / 2) * zoomOffset.z + zoomOffset.x
+      )
+      .attr(
+        "y2",
+        (d) => d.target.y + (d.target.radius / 2) * zoomOffset.z + zoomOffset.y
+      );
 
     node.attr(
       "transform",
       (d) => `translate(${d.x + zoomOffset.x},${d.y + zoomOffset.y})`
     );
 
-    circle.attr(
-      "r",
-      (d) => Math.max(d.radius * zoomOffset.z, minNodeRadius) - margin
-    );
+    rectangle
+      .attr(
+        "width",
+        (d) => Math.max(d.radius * zoomOffset.z, minNodeRadius) - margin
+      )
+      .attr(
+        "height",
+        (d) => Math.max(d.radius * zoomOffset.z, minNodeRadius) - margin
+      );
     linkForce.distance((d) => linkDistanceFactor * zoomOffset.z);
     collisionForce.radius((d) =>
       Math.max(d.radius * zoomOffset.z, minNodeRadius)
     );
-    text.text((d) => zoomOffset.z < 0.5 ? "" : getNodeText(d));
+    text.text((d) => (zoomOffset.z < 0.5 ? "" : getNodeText(d)));
   }
 
-  
   function dragstarted(d) {
     if (!d3.event.active) simulation.alphaTarget(0.3).restart();
     d.fx = d.x;
     d.fy = d.y;
   }
-  
+
   function dragged(d) {
     d.fx = d3.event.x;
     d.fy = d3.event.y;
   }
-  
+
   function dragended(d) {
     if (!d3.event.active) simulation.alphaTarget(0);
     d.fx = d.x;
@@ -249,7 +275,7 @@ export function loadGraph(graphData, prefixes, nodeCapacity, showInfo) {
       d.fy = null;
     });
   }
-  
+
   function getNodeText(d) {
     return d.rdfValue.length <= maxTextLength
       ? d.rdfValue
@@ -258,7 +284,7 @@ export function loadGraph(graphData, prefixes, nodeCapacity, showInfo) {
           Math.floor(maxTextLength / 2)
         )}...${d.rdfValue.slice(-Math.ceil(maxTextLength / 2))}`;
   }
-  
+
   function getColour(d) {
     if (d.rdfType === "uri") {
       return "rgb(200, 100, 100)";
