@@ -52,11 +52,15 @@ export function resolvePrefixesInStatement(statement, prefixes) {
 }
 
 export function validateRDFPrefixes(prefixes) {
+  if (prefixes.length === 0) return true;
+  
   const prefixArr = prefixes.split("\n");
   return prefixArr.every((prefix) => isValidTtlPrefix(prefix));
 }
 
 export function parseTtlPrefixes(prefixes) {
+  if (prefixes.length === 0) return [];
+  
   const prefixArr = prefixes.split("\n");
   return prefixArr.map((prefix) => parseTtlPrefix(prefix));
 }

@@ -6,6 +6,9 @@ export function fetchAllTriples(
   username,
   password
 ) {
+
+  if (endpointUrl.endsWith("/")) endpointUrl = endpointUrl.slice(0, -1);
+
   const stardog = new Stardog({
     endpoint: endpointUrl,
     database: "qanary",

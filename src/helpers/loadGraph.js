@@ -1,4 +1,5 @@
 import { applyPrefixesToStatement } from "./rdf-utils";
+import { nodeColours } from "../config.json";
 
 const d3 = window.d3;
 
@@ -16,6 +17,7 @@ export function loadGraph(graphData, prefixes, nodeCapacity, showInfo) {
 
   let nodes = [];
   let links = [];
+  const whitelist = [];
 
   let zoomOffset = {
     x: 0,
@@ -25,59 +27,128 @@ export function loadGraph(graphData, prefixes, nodeCapacity, showInfo) {
 
   let uniqueId = 0;
   for (const { subject, predicate, object } of graphData) {
-    nodes.push(
-      {
-        id: subject.value,
-        rdfValue: applyPrefixesToStatement(subject.value, prefixes),
-        rdfType: subject.type,
-        radius:
-          Math.min(
-            applyPrefixesToStatement(subject.value, prefixes).length,
-            maxTextLength
-          ) *
-            nodeRadiusFactor +
-          padding +
-          margin,
-      },
-      {
-        id: predicate.value,
-        rdfValue: applyPrefixesToStatement(predicate.value, prefixes),
-        rdfType: predicate.type,
-        radius:
-          Math.min(
-            applyPrefixesToStatement(predicate.value, prefixes).length,
-            maxTextLength
-          ) *
-            nodeRadiusFactor +
-          padding +
-          margin,
-      },
-      {
-        id:
-          object.type === "literal" ? object.value + ++uniqueId : object.value,
-        rdfValue: applyPrefixesToStatement(object.value, prefixes),
-        rdfType: object.type,
-        radius:
-          Math.min(
-            applyPrefixesToStatement(object.value, prefixes).length,
-            maxTextLength
-          ) *
-            nodeRadiusFactor +
-          padding +
-          margin,
-      }
-    );
-    links.push(
-      {
-        source: subject.value,
-        target: predicate.value,
-      },
-      {
-        source: predicate.value,
-        target:
-          object.type === "literal" ? object.value + uniqueId : object.value,
-      }
-    );
+    if (predicate.value === "http://www.w3.org/2000/01/rdf-schema#label") {
+      nodes.push(
+        {
+          id: subject.value,
+          rdfsLabel: object.value,
+          rdfValue: applyPrefixesToStatement(subject.value, prefixes),
+          rdfType: subject.type,
+          radius:
+            Math.min(
+              applyPrefixesToStatement(subject.value, prefixes).length,
+              maxTextLength
+            ) *
+              nodeRadiusFactor +
+            padding +
+            margin,
+        },
+
+        {
+          id: predicate.value,
+          rdfValue: applyPrefixesToStatement(predicate.value, prefixes),
+          rdfType: predicate.type,
+          radius:
+            Math.min(
+              applyPrefixesToStatement(predicate.value, prefixes).length,
+              maxTextLength
+            ) *
+              nodeRadiusFactor +
+            padding +
+            margin,
+        },
+        {
+          id:
+            object.type === "literal"
+              ? object.value + ++uniqueId
+              : object.value,
+          rdfValue: applyPrefixesToStatement(object.value, prefixes),
+          rdfType: object.type,
+          radius:
+            Math.min(
+              applyPrefixesToStatement(object.value, prefixes).length,
+              maxTextLength
+            ) *
+              nodeRadiusFactor +
+            padding +
+            margin,
+        }
+      );
+      links.push(
+        {
+          source: subject.value,
+          target: predicate.value,
+        },
+        {
+          source: predicate.value,
+          target:
+            object.type === "literal" ? object.value + uniqueId : object.value,
+        }
+      );
+      continue;
+    }
+    if (
+      whitelist.includes(subject.value) ||
+      whitelist.includes(predicate.value) ||
+      whitelist.includes(object.value) ||
+      whitelist.length === 0
+    ) {
+      nodes.push(
+        {
+          id: subject.value,
+          rdfValue: applyPrefixesToStatement(subject.value, prefixes),
+          rdfType: subject.type,
+          radius:
+            Math.min(
+              applyPrefixesToStatement(subject.value, prefixes).length,
+              maxTextLength
+            ) *
+              nodeRadiusFactor +
+            padding +
+            margin,
+        },
+        {
+          id: predicate.value,
+          rdfValue: applyPrefixesToStatement(predicate.value, prefixes),
+          rdfType: predicate.type,
+          radius:
+            Math.min(
+              applyPrefixesToStatement(predicate.value, prefixes).length,
+              maxTextLength
+            ) *
+              nodeRadiusFactor +
+            padding +
+            margin,
+        },
+        {
+          id:
+            object.type === "literal"
+              ? object.value + ++uniqueId
+              : object.value,
+          rdfValue: applyPrefixesToStatement(object.value, prefixes),
+          rdfType: object.type,
+          radius:
+            Math.min(
+              applyPrefixesToStatement(object.value, prefixes).length,
+              maxTextLength
+            ) *
+              nodeRadiusFactor +
+            padding +
+            margin,
+        }
+      );
+      links.push(
+        {
+          source: subject.value,
+          target: predicate.value,
+        },
+        {
+          source: predicate.value,
+          target:
+            object.type === "literal" ? object.value + uniqueId : object.value,
+        }
+      );
+    }
   }
 
   // only leave unique nodes
@@ -164,7 +235,7 @@ export function loadGraph(graphData, prefixes, nodeCapacity, showInfo) {
     .enter()
     .append("g")
     .on("click", (d) => {
-      showInfo({ type: d.rdfType, value: d.rdfValue });
+      showInfo({ type: d.rdfType, value: d.rdfValue, label: d.rdfsLabel });
       d.isHighlightedFixed = !d.isHighlightedFixed;
     })
     .on("mouseover", (d) => {
@@ -302,12 +373,6 @@ export function loadGraph(graphData, prefixes, nodeCapacity, showInfo) {
   }
 
   function getColour(d) {
-    if (d.rdfType === "uri") {
-      return "rgb(200, 100, 100)";
-    } else if (d.rdfType === "literal") {
-      return "rgb(100, 200, 100)";
-    } else if (d.rdfType === "bnode") {
-      return "rgb(100, 100, 200)";
-    }
+    return nodeColours[d.rdfType];
   }
 }

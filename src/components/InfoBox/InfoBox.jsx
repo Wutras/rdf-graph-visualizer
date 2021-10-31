@@ -6,6 +6,7 @@ import { resolvePrefixesInStatement } from "../../helpers/rdf-utils";
 export default function InfoBox({
   type,
   value,
+  label,
   visible,
   setVisible,
   prefixes,
@@ -24,7 +25,7 @@ export default function InfoBox({
         {value}
       </a>
     ) : (
-      <div>{value}</div>
+      <span>{value}</span>
     );
 
   return visible ? (
@@ -41,7 +42,8 @@ export default function InfoBox({
         <img className="button-icon" src={close_black} alt={"Close"} />
       </span>
       <div>Type: {type}</div>
-      Value: {valueText}
+      <div>Value: {valueText}</div>
+      {label != null && <div>Label: {label}</div>}
     </div>
   ) : null;
 }

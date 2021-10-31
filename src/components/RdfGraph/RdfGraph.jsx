@@ -39,6 +39,7 @@ export default function RdfGraph({ graphData, prefixes, nodeCapacity }) {
       <InfoBox
         type={infoMessage?.type}
         value={infoMessage?.value}
+        label={infoMessage?.label}
         prefixes={prefixes}
         visible={infoBoxVisible}
         setVisible={setInfoBoxVisible}
