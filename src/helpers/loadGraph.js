@@ -107,7 +107,7 @@ export function loadGraph(graphData, prefixes, nodeCapacity, showInfo) {
   const linkForce = d3
     .forceLink()
     .id((d) => d.id)
-    .distance((d) => linkDistanceFactor)
+    .distance(linkDistanceFactor)
     .strength(1);
 
   const collisionForce = d3.forceCollide().radius((d) => d.radius);
@@ -167,8 +167,14 @@ export function loadGraph(graphData, prefixes, nodeCapacity, showInfo) {
       showInfo({ type: d.rdfType, value: d.rdfValue });
       d.isHighlightedFixed = !d.isHighlightedFixed;
     })
-    .on("mouseover", (d) => d.isHighlighted = true)
-    .on("mouseout", (d) => d.isHighlighted = false);
+    .on("mouseover", (d) => {
+      d.isHighlighted = true;
+      simulation.restart();
+    })
+    .on("mouseout", (d) => {
+      simulation.restart();
+      d.isHighlighted = false;
+    });
 
   const rectangle = node
     .append("rect")
@@ -187,8 +193,8 @@ export function loadGraph(graphData, prefixes, nodeCapacity, showInfo) {
   const text = node
     .append("text")
     .text(getNodeText)
-    .attr("x", (d) => (-Math.min(d.rdfValue.length, maxTextLength) * 9) / 2)
-    .attr("y", 0);
+    .attr("x", (d) => (-Math.min(d.rdfValue.length, maxTextLength) * 9) / 4)
+    .attr("y", (d) => d.radius / 2);
 
   node
     .append("title")
@@ -211,11 +217,21 @@ export function loadGraph(graphData, prefixes, nodeCapacity, showInfo) {
       });
 
     link
-      .attr(
-        "stroke", (d) => d.target.isHighlighted || d.source.isHighlighted || d.target.isHighlightedFixed || d.source.isHighlightedFixed ? "#F00" : "#000"
+      .attr("stroke", (d) =>
+        d.target.isHighlighted ||
+        d.source.isHighlighted ||
+        d.target.isHighlightedFixed ||
+        d.source.isHighlightedFixed
+          ? "#F00"
+          : "#000"
       )
-      .attr(
-        "stroke-width", (d) => d.target.isHighlighted || d.source.isHighlighted || d.target.isHighlightedFixed || d.source.isHighlightedFixed ? "5px" : "0.5px"
+      .attr("stroke-width", (d) =>
+        d.target.isHighlighted ||
+        d.source.isHighlighted ||
+        d.target.isHighlightedFixed ||
+        d.source.isHighlightedFixed
+          ? "5px"
+          : "0.5px"
       )
       .attr(
         "x1",
