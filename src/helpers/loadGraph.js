@@ -1,4 +1,4 @@
-import { applyPrefixesToStatement } from "./rdf-utils";
+import { convertSparqlResultsToD3Graph } from "./rdf-utils";
 import { nodeColours } from "../config.json";
 
 const d3 = window.d3;
@@ -15,8 +15,6 @@ export function loadGraph(graphData, prefixes, nodeCapacity, showInfo) {
     linkDistanceFactor = 200,
     maxOffset = 1000;
 
-  let nodes = [];
-  let links = [];
   const whitelist = [];
 
   let zoomOffset = {
@@ -25,155 +23,16 @@ export function loadGraph(graphData, prefixes, nodeCapacity, showInfo) {
     z: 1,
   };
 
-  let uniqueId = 0;
-  for (const { subject, predicate, object } of graphData) {
-    if (predicate.value === "http://www.w3.org/2000/01/rdf-schema#label") {
-      nodes.push(
-        {
-          id: subject.value,
-          rdfsLabel: object.value,
-          rdfValue: applyPrefixesToStatement(subject.value, prefixes),
-          rdfType: subject.type,
-          radius:
-            Math.min(
-              applyPrefixesToStatement(subject.value, prefixes).length,
-              maxTextLength
-            ) *
-              nodeRadiusFactor +
-            padding +
-            margin,
-        },
-
-        {
-          id: predicate.value,
-          rdfValue: applyPrefixesToStatement(predicate.value, prefixes),
-          rdfType: predicate.type,
-          radius:
-            Math.min(
-              applyPrefixesToStatement(predicate.value, prefixes).length,
-              maxTextLength
-            ) *
-              nodeRadiusFactor +
-            padding +
-            margin,
-        },
-        {
-          id:
-            object.type === "literal"
-              ? object.value + ++uniqueId
-              : object.value,
-          rdfValue: applyPrefixesToStatement(object.value, prefixes),
-          rdfType: object.type,
-          radius:
-            Math.min(
-              applyPrefixesToStatement(object.value, prefixes).length,
-              maxTextLength
-            ) *
-              nodeRadiusFactor +
-            padding +
-            margin,
-        }
-      );
-      links.push(
-        {
-          source: subject.value,
-          target: predicate.value,
-        },
-        {
-          source: predicate.value,
-          target:
-            object.type === "literal" ? object.value + uniqueId : object.value,
-        }
-      );
-      continue;
-    }
-    if (
-      whitelist.includes(subject.value) ||
-      whitelist.includes(predicate.value) ||
-      whitelist.includes(object.value) ||
-      whitelist.length === 0
-    ) {
-      nodes.push(
-        {
-          id: subject.value,
-          rdfValue: applyPrefixesToStatement(subject.value, prefixes),
-          rdfType: subject.type,
-          radius:
-            Math.min(
-              applyPrefixesToStatement(subject.value, prefixes).length,
-              maxTextLength
-            ) *
-              nodeRadiusFactor +
-            padding +
-            margin,
-        },
-        {
-          id: predicate.value,
-          rdfValue: applyPrefixesToStatement(predicate.value, prefixes),
-          rdfType: predicate.type,
-          radius:
-            Math.min(
-              applyPrefixesToStatement(predicate.value, prefixes).length,
-              maxTextLength
-            ) *
-              nodeRadiusFactor +
-            padding +
-            margin,
-        },
-        {
-          id:
-            object.type === "literal"
-              ? object.value + ++uniqueId
-              : object.value,
-          rdfValue: applyPrefixesToStatement(object.value, prefixes),
-          rdfType: object.type,
-          radius:
-            Math.min(
-              applyPrefixesToStatement(object.value, prefixes).length,
-              maxTextLength
-            ) *
-              nodeRadiusFactor +
-            padding +
-            margin,
-        }
-      );
-      links.push(
-        {
-          source: subject.value,
-          target: predicate.value,
-        },
-        {
-          source: predicate.value,
-          target:
-            object.type === "literal" ? object.value + uniqueId : object.value,
-        }
-      );
-    }
-  }
-
-  // only leave unique nodes
-  nodes = [...new Map(nodes.map((o) => [o.id, o])).values()];
-
-  // limit number of nodes
-  console.log(nodes.length);
-  nodes = nodes.slice(0, nodeCapacity);
-
-  // filter out links that are now no longer connected
-  links = links.filter(
-    (link) =>
-      nodes.find((node) => link.source === node.id) != null &&
-      nodes.find((node) => link.target === node.id) != null
-  );
-
-  // add counter to nodes for all links
-  nodes = nodes.map((node) => ({
-    ...node,
-    linkCount: links.reduce(
-      (prev, cur) =>
-        cur.source === node.id || cur.target === node.id ? prev + 1 : prev,
-      0
-    ),
-  }));
+  const { nodes, links } = convertSparqlResultsToD3Graph({
+    sparqlResults: graphData,
+    prefixes,
+    margin,
+    maxTextLength,
+    nodeCapacity,
+    nodeRadiusFactor,
+    padding,
+    whitelist,
+  });
 
   const linkForce = d3
     .forceLink()
@@ -193,27 +52,7 @@ export function loadGraph(graphData, prefixes, nodeCapacity, showInfo) {
     .force("center", d3.forceCenter(width / 2, height / 2))
     .force("collision", collisionForce);
 
-  svg.call(
-    d3.zoom().on("zoom", function () {
-      zoomOffset.x = d3.event.transform.x;
-      /* Math.abs(d3.event.transform.x) < maxOffset * d3.event.transform.k
-          ? d3.event.transform.x
-          : (maxOffset *
-              d3.event.transform.k *
-              Math.abs(d3.event.transform.x)) /
-            d3.event.transform.x; */
-      zoomOffset.y = d3.event.transform.y;
-      /* Math.abs(d3.event.transform.y) < maxOffset * d3.event.transform.k
-          ? d3.event.transform.y
-          : (maxOffset *
-              d3.event.transform.k *
-              Math.abs(d3.event.transform.y)) /
-            d3.event.transform.y; */
-      zoomOffset.z = Math.max(d3.event.transform.k, 0.01);
-
-      simulation.restart();
-    })
-  );
+  svg.call(d3.zoom().on("zoom", zoomed));
 
   const link = svg
     .append("g")
@@ -361,6 +200,14 @@ export function loadGraph(graphData, prefixes, nodeCapacity, showInfo) {
       d.fx = null;
       d.fy = null;
     });
+  }
+
+  function zoomed() {
+    zoomOffset.x = d3.event.transform.x;
+    zoomOffset.y = d3.event.transform.y;
+    zoomOffset.z = Math.max(d3.event.transform.k, 0.01);
+
+    simulation.restart();
   }
 
   function getNodeText(d) {

@@ -4,6 +4,11 @@ WORKDIR /app
 
 COPY . .
 RUN npm ci
+
+ENV HTTPS=true
+ENV SSL_CRT_FILE=nginx/certs/webengineering.ins.hs-anhalt.de.cert
+ENV SSL_KEY_FILE=nginx/certs/webengineering.ins.hs-anhalt.de.key
+
 ENTRYPOINT [ "npm", "start" ]
 
 # stardog-js is causing build issues
