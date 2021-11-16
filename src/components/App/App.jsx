@@ -3,6 +3,7 @@ import { Footer, Header, Main } from "..";
 import { validateRDFPrefixes } from "../../helpers/rdf-utils";
 import { fetchAllTriples } from "../../services/sparqlEndpoint.service";
 import "./App.css";
+import { defaultPrefixURL } from "../../config.json";
 
 function App() {
   const [view, setView] = useState("main");
@@ -25,6 +26,10 @@ function App() {
   const [nodeCapacity, setNodeCapacity] = useState(
     JSON.parse(localStorage.getItem("nodeCapacity")) ?? 10
   );
+  const [usingDefaultPrefixes, setUsingDefaultPrefixes] = useState(
+    JSON.parse(localStorage.getItem("usingDefaultPrefixes")) ?? true
+  );
+  const [simulationData, setSimulationData] = useState(undefined);
 
   const loadGraphData = useCallback(async () => {
     if (
@@ -57,9 +62,24 @@ function App() {
     localStorage.setItem("username", JSON.stringify(username));
     localStorage.setItem("graphURI", JSON.stringify(graphURI));
     localStorage.setItem("prefixes", JSON.stringify(prefixes));
+    localStorage.setItem(
+      "usingDefaultPrefixes",
+      JSON.stringify(usingDefaultPrefixes)
+    );
 
     sessionStorage.setItem("password", JSON.stringify(password));
     sessionStorage.setItem("nodeCapacity", JSON.stringify(nodeCapacity));
+  }
+
+  function restartSimulation() {
+    if (simulationData == null) return;
+
+    simulationData.node.each((d) => {
+      d.fx = null;
+      d.fy = null;
+    });
+
+    simulationData.simulation.restart();
   }
 
   const validSettingsExist =
@@ -75,6 +95,20 @@ function App() {
   useEffect(() => {
     console.log("Mounted!");
     loadGraphData();
+
+    const fetchDefaultPrefixes = async () => {
+      const response = await fetch(defaultPrefixURL);
+
+      if (!!response?.ok && typeof response?.text === "function") {
+        const defaultPrefixes = await response.text();
+
+        if (usingDefaultPrefixes) setPrefixes(defaultPrefixes);
+
+        sessionStorage.setItem("defaultPrefixes", defaultPrefixes);
+      }
+    };
+
+    fetchDefaultPrefixes();
   }, []);
 
   return (
@@ -106,15 +140,21 @@ function App() {
             value: nodeCapacity,
             setter: setNodeCapacity,
           },
+          usingDefaultPrefixes: {
+            value: usingDefaultPrefixes,
+            setter: setUsingDefaultPrefixes,
+          },
         }}
         view={view}
         graphData={graphData}
+        setSimulationData={setSimulationData}
       />
       <Footer
         setView={setView}
         view={view}
         validSettingsExist={validSettingsExist}
         saveSettings={saveSettings}
+        restartSimulation={restartSimulation}
       />
     </div>
   );

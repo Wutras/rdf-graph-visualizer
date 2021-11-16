@@ -1,5 +1,15 @@
 .footer {
-    height: var(--header-footer-height);
-    background-color: var(--primary-color);
-    display: grid;
+  height: var(--header-footer-height);
+  background-color: var(--primary-color);
+  display: grid;
+}
+
+.footer > button {
+  position: absolute;
+  width: 20vh;
+  height: var(--header-footer-height);
+  border-top-right-radius: 10px;
+  border-top-left-radius: 10px;
+  font-size: x-large;
+  background-color: var(--primary-color);
 }

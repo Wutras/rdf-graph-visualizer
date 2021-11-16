@@ -3,12 +3,15 @@ Helper/internal functions
 */
 
 function isValidTtlPrefix(prefix) {
+  if (prefix.length === 0) return true;
   return /^(PREFIX\s+\w*:\s*<[^>]*>|@prefix\s+\w*:\s*<[^>]*>\s*\.)$/i.test(
     prefix.trim()
   );
 }
 
 function parseTtlPrefix(prefix) {
+  if (prefix.length === 0) return;
+
   const matches = prefix
     .trim()
     .match(
@@ -33,20 +36,29 @@ Exported functions
 export function applyPrefixesToStatement(statement, prefixes) {
   if (typeof statement !== "string") return statement;
   let shortenedStatement = statement;
+  let appliedPrefixes = new Set();
   for (const prefix of prefixes) {
-    if (shortenedStatement === prefix.uri) continue;
+    if (
+      shortenedStatement === prefix.uri ||
+      appliedPrefixes.has(prefix.prefix) ||
+      appliedPrefixes.has(prefix.uri)
+    )
+      continue;
 
     shortenedStatement = shortenedStatement.replaceAll(
       prefix.uri,
       prefix.prefix
     );
+
+    appliedPrefixes.add(prefix.prefix);
+    appliedPrefixes.add(prefix.uri);
   }
 
   return shortenedStatement;
 }
 
 export function resolvePrefixesInStatement(statement, prefixes) {
-  if (typeof statement !== "string") return statement;
+  if (typeof statement !== "string" || statement.length === 0) return statement;
   let resolvedStatement = statement;
   for (const prefix of prefixes) {
     resolvedStatement = resolvedStatement.replaceAll(prefix.prefix, prefix.uri);
@@ -66,7 +78,9 @@ export function parseTtlPrefixes(prefixes) {
   if (prefixes.length === 0) return [];
 
   const prefixArr = prefixes.split("\n");
-  return prefixArr.map((prefix) => parseTtlPrefix(prefix));
+  return prefixArr
+    .map((prefix) => parseTtlPrefix(prefix))
+    .filter((prefix) => !!prefix);
 }
 
 export function stringifyTtlPrefixes(prefixes) {
@@ -129,19 +143,6 @@ export function convertSparqlResultsToD3Graph({
             margin,
         },
         {
-          id: predicate.value,
-          rdfValue: applyPrefixesToStatement(predicate.value, prefixes),
-          rdfType: predicate.type,
-          radius:
-            Math.min(
-              applyPrefixesToStatement(predicate.value, prefixes).length,
-              maxTextLength
-            ) *
-              nodeRadiusFactor +
-            padding +
-            margin,
-        },
-        {
           id:
             object.type === "literal"
               ? object.value + ++uniqueId
@@ -158,17 +159,15 @@ export function convertSparqlResultsToD3Graph({
             margin,
         }
       );
-      links.push(
-        {
-          source: subject.value,
-          target: predicate.value,
-        },
-        {
-          source: predicate.value,
-          target:
-            object.type === "literal" ? object.value + uniqueId : object.value,
-        }
-      );
+      links.push({
+        source: subject.value,
+        target:
+          object.type === "literal" ? object.value + uniqueId : object.value,
+
+        id: predicate.value,
+        rdfValue: applyPrefixesToStatement(predicate.value, prefixes),
+        rdfType: predicate.type,
+      });
     }
   }
 
@@ -187,9 +186,14 @@ export function convertSparqlResultsToD3Graph({
 
   // filter out duplicate links
   links = links.filter(
-    (link, i) => 
-      links.slice(i + 1).find(otherLink => link.source === otherLink.source && link.target === otherLink.target) == null
-  )
+    (link, i) =>
+      links
+        .slice(i + 1)
+        .find(
+          (otherLink) =>
+            link.source === otherLink.source && link.target === otherLink.target
+        ) == null
+  );
 
   // add counter to nodes for all links
   nodes = nodes.map((node) => getNumberOfLinks(node, links));

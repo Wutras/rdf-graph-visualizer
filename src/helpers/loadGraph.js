@@ -3,10 +3,21 @@ import { nodeColours } from "../config.json";
 
 const d3 = window.d3;
 
-export function loadGraph(graphData, prefixes, nodeCapacity, showInfo) {
+export function loadGraph(
+  graphData,
+  prefixes,
+  nodeCapacity,
+  showInfo,
+  setSimulationData
+) {
+  const svgElement = document.querySelector(".hsa-rdf-graph");
+
+  // This causes bugs sometimes in the settings view
+  if (svgElement == null) return;
+
   const svg = d3.select(".hsa-rdf-graph"),
-    width = document.querySelector(".hsa-rdf-graph").clientWidth,
-    height = document.querySelector(".hsa-rdf-graph").clientHeight,
+    width = svgElement.clientWidth,
+    height = svgElement.clientHeight,
     padding = 0,
     margin = 0,
     maxTextLength = 32, // 32 is perfect if nodeRadiusFactor is 5
@@ -34,6 +45,22 @@ export function loadGraph(graphData, prefixes, nodeCapacity, showInfo) {
     whitelist,
   });
 
+  const arrows = svg
+    .append("defs")
+    .append("marker")
+    .attr("id", "arrowhead")
+    .attr("viewBox", "-0 -5 10 10")
+    .attr("refX", 13)
+    .attr("refY", 0)
+    .attr("orient", "auto")
+    .attr("markerWidth", 13)
+    .attr("markerHeight", 13)
+    .attr("xoverflow", "visible")
+    .append("svg:path")
+    .attr("d", "M 0,-5 L 10 ,0 L 0,5")
+    .attr("fill", "#000")
+    .style("stroke", "#F00");
+
   const linkForce = d3
     .forceLink()
     .id((d) => d.id)
@@ -52,18 +79,9 @@ export function loadGraph(graphData, prefixes, nodeCapacity, showInfo) {
     .force("center", d3.forceCenter(width / 2, height / 2))
     .force("collision", collisionForce);
 
-  svg.call(d3.zoom().on("zoom", zoomed));
+  const zoom = d3.zoom().on("zoom", zoomed);
 
-  const link = svg
-    .append("g")
-    .attr("stroke", "#999")
-    .attr("stroke-width", "0.5px")
-    .attr("stroke-opacity", "0.6")
-    .selectAll("line")
-    .data(links)
-    .enter()
-    .append("line")
-    .attr("color", "rgb(0, 0, 0)");
+  svg.call(zoom);
 
   const node = svg
     .append("g")
@@ -86,10 +104,30 @@ export function loadGraph(graphData, prefixes, nodeCapacity, showInfo) {
       d.isHighlighted = false;
     });
 
+  const link = svg
+    .append("g")
+    .attr("stroke", "#999")
+    .attr("stroke-width", "2px")
+    .attr("stroke-opacity", "0.6")
+    .selectAll("line")
+    .data(links)
+    .enter()
+    .append("g");
+
+  const linkLine = link
+    .append("line")
+    .attr("color", "rgb(0, 0, 0)");
+    
+
+  setSimulationData({
+    node,
+    simulation,
+  });
+
   const rectangle = node
     .append("rect")
     .attr("width", (d) => d.radius - margin)
-    .attr("height", (d) => d.radius - margin)
+    .attr("height", nodeRadiusFactor + margin)
     .attr("fill", getColour);
 
   const drag_handler = d3
@@ -100,11 +138,43 @@ export function loadGraph(graphData, prefixes, nodeCapacity, showInfo) {
 
   drag_handler(node);
 
-  const text = node
+  const nodeText = node
     .append("text")
     .text(getNodeText)
+    .attr("x", (d) => (-Math.min(d.rdfValue.length, maxTextLength) * -2) / 4)
+    .attr("y", minNodeRadius / 1.5);
+
+  const textGroup = link.append("g");
+
+  // Background rectangle for better visibility
+  textGroup
+    .append("rect")
+    .attr(
+      "width",
+      (d) =>
+        Math.max(
+          2 *
+            (d.rdfValue.length * nodeRadiusFactor + padding + margin) *
+            zoomOffset.z,
+          minNodeRadius
+        ) - margin
+    )
+    .attr(
+      "height",
+      (d) =>
+        Math.max((nodeRadiusFactor + margin) * zoomOffset.z, minNodeRadius) -
+        margin
+    )
+    .attr("fill", "rgb(255, 255, 255)");
+  const linkText = textGroup
+    .append("text")
+    .text(getNodeText)
+    .attr("y", minNodeRadius / 1.5)
+    .attr("x", (d) => (-Math.min(d.rdfValue.length, maxTextLength) * -2) / 4);
+
+  textGroup
     .attr("x", (d) => (-Math.min(d.rdfValue.length, maxTextLength) * 9) / 4)
-    .attr("y", (d) => d.radius / 2);
+    .attr("y", 0);
 
   node
     .append("title")
@@ -126,7 +196,7 @@ export function loadGraph(graphData, prefixes, nodeCapacity, showInfo) {
         return Math.max(d.radius, Math.min(height - d.radius, d.y));
       });
 
-    link
+    linkLine
       .attr("stroke", (d) =>
         d.target.isHighlighted ||
         d.source.isHighlighted ||
@@ -135,50 +205,63 @@ export function loadGraph(graphData, prefixes, nodeCapacity, showInfo) {
           ? "#F00"
           : "#000"
       )
-      .attr("stroke-width", (d) =>
-        d.target.isHighlighted ||
-        d.source.isHighlighted ||
-        d.target.isHighlightedFixed ||
-        d.source.isHighlightedFixed
-          ? "5px"
-          : "0.5px"
-      )
+      .attr("marker-end", (d) =>
+      d.target.isHighlighted ||
+      d.source.isHighlighted ||
+      d.target.isHighlightedFixed ||
+      d.source.isHighlightedFixed
+        ? "url(#arrowhead)"
+        : "")
       .attr(
         "x1",
         (d) => d.source.x + (d.source.radius / 2) * zoomOffset.z + zoomOffset.x
       )
-      .attr(
-        "y1",
-        (d) => d.source.y + (d.source.radius / 2) * zoomOffset.z + zoomOffset.y
-      )
+      .attr("y1", (d) => d.source.y * zoomOffset.z + zoomOffset.y)
       .attr(
         "x2",
         (d) => d.target.x + (d.target.radius / 2) * zoomOffset.z + zoomOffset.x
       )
-      .attr(
-        "y2",
-        (d) => d.target.y + (d.target.radius / 2) * zoomOffset.z + zoomOffset.y
-      );
+      .attr("y2", (d) => d.target.y * zoomOffset.z + zoomOffset.y);
 
     node.attr(
       "transform",
       (d) => `translate(${d.x + zoomOffset.x},${d.y + zoomOffset.y})`
     );
 
+    textGroup
+      .attr(
+        "transform",
+        (d) =>
+          `translate(${(d.target.x + d.source.x) / 2},${
+            (d.target.y + d.source.y) / 2
+          })`
+      )
+      .attr("display", (d) =>
+        d.source.isHighlighted ||
+        d.source.isHighlightedFixed ||
+        d.target.isHighlighted ||
+        d.target.isHighlightedFixed
+          ? ""
+          : "none"
+      );
+
     rectangle
       .attr(
         "width",
-        (d) => Math.max(d.radius * zoomOffset.z, minNodeRadius) - margin
+        (d) => Math.max(2 * d.radius * zoomOffset.z, minNodeRadius) - margin
       )
       .attr(
         "height",
-        (d) => Math.max(d.radius * zoomOffset.z, minNodeRadius) - margin
+        (d) =>
+          Math.max((nodeRadiusFactor + margin) * zoomOffset.z, minNodeRadius) -
+          margin
       );
     linkForce.distance((d) => linkDistanceFactor * zoomOffset.z);
     collisionForce.radius((d) =>
       Math.max(d.radius * zoomOffset.z, minNodeRadius)
     );
-    text.text((d) => (zoomOffset.z < 0.5 ? "" : getNodeText(d)));
+    nodeText.text((d) => (zoomOffset.z < 0.5 ? "" : getNodeText(d)));
+    linkText.text((d) => (zoomOffset.z < 0.5 ? "" : getNodeText(d)));
   }
 
   function dragstarted(d) {
@@ -196,10 +279,6 @@ export function loadGraph(graphData, prefixes, nodeCapacity, showInfo) {
     if (!d3.event.active) simulation.alphaTarget(0);
     d.fx = d.x;
     d.fy = d.y;
-    setTimeout(() => {
-      d.fx = null;
-      d.fy = null;
-    });
   }
 
   function zoomed() {

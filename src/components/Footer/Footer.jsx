@@ -4,9 +4,10 @@ import "./Footer.css";
 import settings_black from "../shared/images/settings_black.svg";
 import save_black from "../shared/images/save_black.svg";
 
-export default function Footer({ setView, view, validSettingsExist, saveSettings }) {
+export default function Footer({ setView, view, validSettingsExist, saveSettings, restartSimulation }) {
   return (
     <div className="footer">
+      <button onClick={() => restartSimulation()}>Reset</button>
       {view === "settings" ? (
         <CircularIconButton
           style={{

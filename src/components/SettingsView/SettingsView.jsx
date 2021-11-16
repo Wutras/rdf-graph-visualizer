@@ -31,12 +31,27 @@ export default function SettingsView({ settings }) {
         value={settings.graphURI.value}
       />
       <InputField
-        prompt="RDF Prefixes:"
+        prompt="Use default prefixes:"
+        type="checkbox"
+        onChange={(cE) => {
+          settings.usingDefaultPrefixes.setter(cE.target.checked);
+          const defaultPrefixes = sessionStorage.getItem("defaultPrefixes") ?? "Default prefixes could not be loaded.";
+          if (cE.target.checked === true && defaultPrefixes != null) {
+            settings.prefixes.setter(defaultPrefixes);
+          }
+        }}
+        checked={settings.usingDefaultPrefixes.value}
+      />
+      <InputField
+        prompt="RDF Prefixes (In case of conflicts, the first prefix is used):"
         placeholder={`e.g.
 PREFIX example: <http://example.com>
 PREFIX oa: <http://www.w3.org/ns/openannotation/core/>`}
         type="textarea"
-        onChange={(cE) => settings.prefixes.setter(cE.target.value)}
+        onChange={(cE) => {
+          settings.prefixes.setter(cE.target.value);
+          settings.usingDefaultPrefixes.setter(false);
+        }}
         value={settings.prefixes.value}
       />
       <InputField

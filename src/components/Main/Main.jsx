@@ -1,15 +1,26 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import "./Main.css";
-import { InfoBox, RdfGraph, SettingsView } from "..";
+import { RdfGraph, SettingsView } from "..";
 import { parseTtlPrefixes } from "../../helpers/rdf-utils";
 
-export default function Main({ view, settings, graphData, infoMessage }) {
+export default function Main({ view, settings, graphData, setSimulationData }) {
+  const [isLoading, setIsLoading] = useState(true);
+  useEffect(() => {
+    if (view === "settings") setIsLoading(false);
+  }, [view])
+
   return (
-    <div className="main">
+    <div className={"main" + (isLoading ? " loading" : "")}>
       {view === "settings" ? (
         <SettingsView settings={settings} />
       ) : (
-        <RdfGraph graphData={graphData} prefixes={parseTtlPrefixes(settings.prefixes.value)} nodeCapacity={settings.nodeCapacity.value} />
+        <RdfGraph
+          graphData={graphData}
+          prefixes={parseTtlPrefixes(settings.prefixes.value)}
+          nodeCapacity={settings.nodeCapacity.value}
+          setSimulationData={setSimulationData}
+          setIsLoading={setIsLoading}
+        />
       )}
     </div>
   );
