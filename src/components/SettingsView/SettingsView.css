@@ -5,3 +5,8 @@
     padding-top: 2rem;
     padding-bottom: 2rem;
 }
+
+.settings-view input[type="checkbox"] {
+    min-height: 2.5vh;
+    max-height: 3vh;
+}

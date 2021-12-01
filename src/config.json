@@ -4,5 +4,10 @@
         "literal": "rgb(100, 200, 100)",
         "bnode": "rgb(100, 100, 200)"
     },
+    "edgeColours": {
+        "line": "rgb(0, 0, 0)",
+        "arrowHead": "rgb(0, 0, 0)",
+        "textBox": "rgb(225, 225, 225)"
+    },
     "defaultPrefixURL": "https://prefix.cc/popular/all.file.ttl"
 }

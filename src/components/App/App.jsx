@@ -79,7 +79,7 @@ function App() {
       d.fy = null;
     });
 
-    simulationData.simulation.restart();
+    simulationData.simulation.alpha(1).alphaTarget(0.1).alphaMin(0.15).velocityDecay(0.4).restart();
   }
 
   const validSettingsExist =
