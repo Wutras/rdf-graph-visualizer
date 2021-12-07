@@ -5,7 +5,7 @@ export default function CircularIconButton({ icon, alt, style, onClick, active=t
   return (
     <div style={style} className="half-circle">
       <div className={`circular-button ${!active ? "inactive" : "active"}`} onClick={active ? onClick : null}>
-        <img className="button-icon" src={icon} alt={alt} />
+        <img className="button-icon" draggable={false} src={icon} alt={alt} />
       </div>
     </div>
   );
