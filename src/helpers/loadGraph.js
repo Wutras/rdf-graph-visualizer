@@ -29,16 +29,9 @@ export function loadGraph({
     margin = 0,
     maxTextLength = 32, // 32 is perfect if nodeRadiusFactor is 5
     nodeRadiusFactor = 9, // should not go below 11 as of right now
-<<<<<<< HEAD
     minNodeRadius = 20;
-=======
-    minNodeRadius = 20,
-    linkDistanceFactor = 200,
-    maxOffset = 1000;
 
-  const whitelist = [];
   let hidden = {};
->>>>>>> Add helper collapsible node functions from asd project
 
   let zoomOffset = {
     x: 0,
@@ -46,7 +39,7 @@ export function loadGraph({
     z: 1,
   };
 
-  const { nodes, links } = convertSparqlResultsToD3Graph({
+  let { nodes, links } = convertSparqlResultsToD3Graph({
     sparqlResults: graphData,
     prefixes,
     margin,
@@ -62,9 +55,9 @@ export function loadGraph({
 
   // #CONTAINERS
   //* container groups ensuring correct rendering order and therefore correct layering
-  const linkG = svg.append("g");
-  const nodeG = svg.append("g");
-  const linkTextG = svg
+  let linkG = svg.append("g");
+  let nodeG = svg.append("g");
+  let linkTextG = svg
     .append("g")
     .selectAll("g")
     .data(links)
@@ -73,7 +66,7 @@ export function loadGraph({
 
   // #NODES
   //* The node elements and their cosmetic attachments
-  const node = nodeG
+  let node = nodeG
     .attr("stroke", "#fff")
     .attr("stroke-width", "0.1px")
     .selectAll("g")
@@ -83,6 +76,7 @@ export function loadGraph({
     .on("click", (d) => {
       if (isDragging) return;
       showInfo({ type: d.rdfType, value: d.rdfValue, label: d.rdfsLabel });
+      toggleNode(d);
       d.isHighlightedFixed = !d.isHighlightedFixed;
     })
     .on("mouseover", (d) => {
@@ -94,15 +88,15 @@ export function loadGraph({
       if (!isDragging) updateOnce();
     });
 
-  const rectangle = node.append("rect").attr("fill", getColour);
+  let rectangle = node.append("rect").attr("fill", getColour);
 
-  const nodeText = showingNodeText
+  let nodeText = showingNodeText
     ? node.append("text").text(getNodeText)
     : undefined;
 
   // #LINKS
   //* Link elements and their cosmetic attachments
-  const link = linkG
+  let link = linkG
     .attr("stroke", "#999")
     .attr("stroke-width", "2px")
     .attr("stroke-opacity", "0.6")
@@ -111,9 +105,9 @@ export function loadGraph({
     .enter()
     .append("g");
 
-  const linkLine = link.append("line").attr("color", edgeColours.line);
+  let linkLine = link.append("line").attr("color", edgeColours.line);
 
-  const linkTextRect = showingLinkText
+  let linkTextRect = showingLinkText
     ? linkTextG
         .append("rect")
         .attr("x", (d) => d.width - getNodeText(d).length)
@@ -129,7 +123,7 @@ export function loadGraph({
         .attr("fill", edgeColours.textBox)
     : undefined;
 
-  const linkText = showingLinkText
+  let linkText = showingLinkText
     ? linkTextG
         .append("text")
         .text(getNodeText)
@@ -527,18 +521,139 @@ export function loadGraph({
         visited.push(linkedNode);
         const furtherNodes = getAllLinkedNodes(linkedNode);
         furtherNodes.forEach(hideNodes);
-        const positionInData = graphData.nodes.indexOf(linkedNode);
-        const [removedNode] = graphData.nodes.splice(positionInData, 1);
-        hidden[sourceNode.company_id]?.nodes?.push?.(removedNode);
-        graphData.links = graphData.links.filter((edge) => {
+        const positionInData = nodes.indexOf(linkedNode);
+        const [removedNode] = nodes.splice(positionInData, 1);
+        hidden[sourceNode.id]?.nodes?.push?.(removedNode);
+        links = links.filter((edge) => {
           const isAssociated =
             edge.source !== linkedNode && edge.target !== linkedNode;
-          if (!isAssociated) hidden[sourceNode.company_id]?.links?.push?.(edge);
+          if (!isAssociated) hidden[sourceNode.id]?.links?.push?.(edge);
           return isAssociated;
         });
       }
     }
 
     linkedNodes.forEach(hideNodes);
-  }  
+  }
+
+  function drawGraph() {
+    while (svgElement.lastChild) {
+      svgElement.removeChild(svgElement.lastChild);
+    }
+    node.exit().remove();
+    link.exit().remove();
+    simulation.stop();
+    simulation.nodes(nodes).restart();
+    link.links = links;
+
+    // #CONTAINERS
+    //* container groups ensuring correct rendering order and therefore correct layering
+    linkG = svg.append("g");
+    nodeG = svg.append("g");
+    linkTextG = svg.append("g").selectAll("g").data(links).enter().append("g");
+
+    // #NODES
+    //* The node elements and their cosmetic attachments
+    node = nodeG
+      .attr("stroke", "#fff")
+      .attr("stroke-width", "0.1px")
+      .selectAll("g")
+      .data(nodes)
+      .enter()
+      .append("g")
+      .on("click", (d) => {
+        if (isDragging) return;
+        showInfo({ type: d.rdfType, value: d.rdfValue, label: d.rdfsLabel });
+        d.isHighlightedFixed = !d.isHighlightedFixed;
+      })
+      .on("mouseover", (d) => {
+        d.isHighlighted = true;
+        if (!isDragging) updateOnce();
+      })
+      .on("mouseout", (d) => {
+        d.isHighlighted = false;
+        if (!isDragging) updateOnce();
+      });
+
+    rectangle = node.append("rect").attr("fill", getColour);
+
+    nodeText = node.append("text").text(getNodeText);
+
+    node
+      .append("title")
+      .text(
+        (d) =>
+          `type: ${d.rdfType}, value: ${d.rdfValue}, linkCount: ${d.linkCount}`
+      );
+
+    // #LINKS
+    //* Link elements and their cosmetic attachments
+    link = linkG
+      .attr("stroke", "#999")
+      .attr("stroke-width", "2px")
+      .attr("stroke-opacity", "0.6")
+      .selectAll("line")
+      .data(links)
+      .enter()
+      .append("g");
+
+    linkLine = link.append("line").attr("color", edgeColours.line);
+
+    linkTextRect = linkTextG
+      .append("rect")
+      .attr("x", (d) => d.width - getNodeText(d).length)
+      .attr("width", getLinkTextBoxWidth)
+      .attr(
+        "height",
+        (d) =>
+          Math.max(
+            nodeRadiusFactor * zoomOffset.z + margin + padding,
+            minNodeRadius
+          ) - margin
+      )
+      .attr("fill", edgeColours.textBox);
+
+    linkText = linkTextG
+      .append("text")
+      .text(getNodeText)
+      .attr("y", minNodeRadius / 1.5)
+      .attr("x", (d) => d.width - getNodeText(d).length);
+
+    //* The arrow heads indicating the direction of the edges
+    svg
+      .append("defs")
+      .append("marker")
+      .attr("id", "arrowhead")
+      .attr("viewBox", "-0 -5 10 10")
+      .attr("refX", 35)
+      .attr("refY", 0)
+      .attr("orient", "auto")
+      .attr("markerWidth", 13)
+      .attr("markerHeight", 13)
+      .attr("xoverflow", "visible")
+      .append("svg:path")
+      .attr("d", "M 0,-5 L 10 ,0 L 0,5")
+      .attr("fill", edgeColours.arrowHead)
+      .style("stroke", "#F00");
+  }
+
+  function collapseNode(nodeToCollapse) {
+    nodeToCollapse._isCollapsed = true;
+    hidden[nodeToCollapse.id] = {
+      nodes: [],
+      links: [],
+    };
+    hideDependentNodes(nodeToCollapse);
+    drawGraph();
+  }
+
+  
+
+  function toggleNode(nodeToToggle) {
+    if (nodeToToggle._isCollapsed) {
+      //expandNode(nodeToToggle);
+    } else {
+      collapseNode(nodeToToggle);
+    }
+  }
 }
