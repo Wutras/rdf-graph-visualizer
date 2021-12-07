@@ -218,7 +218,10 @@ export function loadGraph(
       .attr(
         "width",
         (d) =>
-          (d.rectWidth = (getNodeText(d).length + padding) * nodeRadiusFactor)
+          (d.rectWidth = Math.max(
+            (getNodeText(d).length * zoomOffset.z + padding) * nodeRadiusFactor,
+            (minNodeRadius + padding) * nodeRadiusFactor
+          ))
       )
       .attr(
         "height",
@@ -268,8 +271,8 @@ export function loadGraph(
         "transform",
         (d) =>
           `translate(${
-            ((d.target.x + d.source.x) * zoomOffset.z + zoomOffset.x) / 2
-          },${((d.target.y + d.source.y) * zoomOffset.z + zoomOffset.y) / 2})`
+            ((d.target.x + d.source.x) * zoomOffset.z) / 2 + zoomOffset.x
+          },${((d.target.y + d.source.y) * zoomOffset.z) / 2 + zoomOffset.y})`
       )
       .attr("display", (d) =>
         d.source.isHighlighted ||
@@ -429,8 +432,14 @@ export function loadGraph(
 
   function boxingForce() {
     for (let n of nodes) {
-      n.x = Math.max(0, Math.min((width - (n.width ?? 0)) * Math.max(1, zoomOffset.z), n.x));
-      n.y = Math.max(0, Math.min((height - (n.height ?? 0)) * Math.max(1, zoomOffset.z), n.y));
+      n.x = Math.max(
+        0,
+        Math.min((width - (n.width ?? 0)) * Math.max(1, zoomOffset.z), n.x)
+      );
+      n.y = Math.max(
+        0,
+        Math.min((height - (n.height ?? 0)) * Math.max(1, zoomOffset.z), n.y)
+      );
     }
   }
 }
