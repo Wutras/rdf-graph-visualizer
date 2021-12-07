@@ -88,13 +88,6 @@ export function loadGraph(
 
   const nodeText = node.append("text").text(getNodeText);
 
-  node
-    .append("title")
-    .text(
-      (d) =>
-        `type: ${d.rdfType}, value: ${d.rdfValue}, linkCount: ${d.linkCount}`
-    );
-
   // #LINKS
   //* Link elements and their cosmetic attachments
   const link = linkG
@@ -294,11 +287,11 @@ export function loadGraph(
 
     nodes.forEach((d) => q.visit(collideRect(d)));
     nodeText
-      .text((d) => (zoomOffset.z < 0.5 ? "" : getNodeText(d)))
+      .text((d) => getNodeText(d))
       .attr("x", (nodeRadiusFactor * padding) / 2)
       .attr("y", (d) => d.height / 1.5 + (padding * zoomOffset.z) / 10);
     linkText
-      .text((d) => (zoomOffset.z < 0.5 ? "" : getNodeText(d)))
+      .text((d) => getNodeText(d))
       .attr("x", (nodeRadiusFactor * padding) / 2)
       .attr("y", (d) => d.rectHeight / 1.5 + padding / 10);
   }
@@ -335,13 +328,13 @@ export function loadGraph(
   //* Helper functions for determining element attributes
 
   function getNodeText(d) {
-    return d.rdfValue.length <= maxTextLength * zoomOffset.z
+    return d.rdfValue.length <= maxTextLength * zoomOffset.z / 1.4
       ? d.rdfValue
       : `${d.rdfValue.slice(
           0,
-          Math.floor((maxTextLength * zoomOffset.z) / 2)
+          Math.floor((maxTextLength * zoomOffset.z / 1.4) / 2)
         )}...${d.rdfValue.slice(
-          -Math.ceil((maxTextLength * zoomOffset.z) / 2)
+          -Math.ceil((maxTextLength * zoomOffset.z / 1.4) / 2)
         )}`;
   }
 
