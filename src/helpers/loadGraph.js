@@ -407,8 +407,6 @@ export function loadGraph(
             d2.data.x -=
               Math.min(width / 2 - d.width, width / 2 - d2.data.width) / 4;
           }
-        } else {
-          d.isHighlighted = d2.data.isHighlighted = false;
         }
       }
       return x1 > nx2 || x2 < nx1 || y1 > ny2 || y2 < ny1;
