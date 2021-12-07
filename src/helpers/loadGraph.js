@@ -21,10 +21,10 @@ export function loadGraph(
   const svg = d3.select(".hsa-rdf-graph"),
     width = svgElement.clientWidth,
     height = svgElement.clientHeight,
-    padding = 20,
+    padding = 0,
     margin = 0,
     maxTextLength = 32, // 32 is perfect if nodeRadiusFactor is 5
-    nodeRadiusFactor = 11, // should not go below 11 as of right now
+    nodeRadiusFactor = 9, // should not go below 11 as of right now
     minNodeRadius = 20,
     linkDistanceFactor = 200,
     maxOffset = 1000;
@@ -86,8 +86,6 @@ export function loadGraph(
 
   const rectangle = node.append("rect").attr("fill", getColour);
 
-  const circ = node.append("circle").attr("fill", "rgb(0, 0, 0)").attr("r", 10);
-
   const nodeText = node.append("text").text(getNodeText);
 
   node
@@ -112,7 +110,7 @@ export function loadGraph(
 
   const linkTextRect = linkTextG
     .append("rect")
-    .attr("x", (d) => 0 /*getLinkTextBoxWidth(d) + margin / 2*/)
+    .attr("x", (d) => d.width - getNodeText(d).length)
     .attr("width", getLinkTextBoxWidth)
     .attr(
       "height",
@@ -128,7 +126,7 @@ export function loadGraph(
     .append("text")
     .text(getNodeText)
     .attr("y", minNodeRadius / 1.5)
-    .attr("x", padding / 2 /*(getLinkTextBoxWidth(d) - margin) / 2*/);
+    .attr("x", (d) => d.width - getNodeText(d).length);
 
   //* The arrow heads indicating the direction of the edges
   svg
@@ -153,8 +151,15 @@ export function loadGraph(
     .id((d) => d.id)
     .strength(0);
 
-  const spacing = d3.forceManyBody().distanceMin(d => (d.width + margin) / 2).distanceMax(d => (d.width + margin) * 1.5).strength(-100);
-  const attraction = d3.forceManyBody().distanceMin(d => (d.width + margin) * 2).strength(50);
+  const spacing = d3
+    .forceManyBody()
+    .distanceMin((d) => (d.width + margin) / 2)
+    .distanceMax((d) => (d.width + margin) * 1.5)
+    .strength(-100);
+  const attraction = d3
+    .forceManyBody()
+    .distanceMin((d) => (d.width + margin) * 2)
+    .strength(50);
   // #SIMULATION
   const simulation = d3
     .forceSimulation()
@@ -195,8 +200,8 @@ export function loadGraph(
         "width",
         (d) =>
           (d.width = Math.max(
-            getNodeText(d).length * nodeRadiusFactor * zoomOffset.z + padding,
-            minNodeRadius * nodeRadiusFactor
+            (getNodeText(d).length * zoomOffset.z + padding) * nodeRadiusFactor,
+            (minNodeRadius + padding) * nodeRadiusFactor
           ))
       )
       .attr(
@@ -209,10 +214,10 @@ export function loadGraph(
       );
 
     linkTextRect
-      .attr("width", (d) => 0) //getNodeText(d).length * nodeRadiusFactor + padding)
+      .attr("width", (d) => d.rectWidth = (getNodeText(d).length + padding) * nodeRadiusFactor)
       .attr(
         "height",
-        Math.max(nodeRadiusFactor * zoomOffset.z, minNodeRadius) + padding
+        d => d.rectHeight = Math.max(nodeRadiusFactor * zoomOffset.z, minNodeRadius) + padding
       );
 
     linkLine
@@ -268,9 +273,6 @@ export function loadGraph(
           : "none"
       );
 
-
-  circ.attr("transform", d => `translate(${d.width}, 0)`);
-
     const q = quadtree()
       .x((d) => d.x)
       .y((d) => d.y)
@@ -283,18 +285,12 @@ export function loadGraph(
     nodes.forEach((d) => q.visit(collideRect(d)));
     nodeText
       .text((d) => (zoomOffset.z < 0.5 ? "" : getNodeText(d)))
-      .attr(
-        "x",
-        (d) => 0 /*{
-        const textElement = d3.selectAll("text").filter(function () {
-          return d3.select(this).text() === getNodeText(d);
-        });
-
-        return d.width - textElement.getBBox().width / 2;
-      }*/
-      )
+      .attr("x", nodeRadiusFactor * padding / 2)
       .attr("y", (d) => d.height / 1.5 + (padding * zoomOffset.z) / 10);
-    linkText.text((d) => (zoomOffset.z < 0.5 ? "" : getNodeText(d)));
+    linkText
+      .text((d) => (zoomOffset.z < 0.5 ? "" : getNodeText(d)))
+      .attr("x", nodeRadiusFactor * padding / 2)
+      .attr("y", d => d.rectHeight / 1.5 + padding / 10);
   }
 
   function dragstarted(d) {
@@ -391,16 +387,16 @@ export function loadGraph(
         d2.data.y2 = (d2.data.fy ?? d2.data.y) + d2.data.height;
         //console.log({d: {...d}, d2: {...d2.data}});
         if (overlap(d2.data, d)) {
-          d.isHighlighted = d2.data.isHighlighted = true;
-
           if (Math.random() > 0.75) {
-            d.y += Math.min(height / 2 - d.height , height / 2 - d2.data.height) / 8;
-            d2.data.y -= Math.min(height / 2 - d.height , height / 2 - d2.data.height) / 8;
+            d.y +=
+              Math.min(height / 2 - d.height, height / 2 - d2.data.height) / 8;
+            d2.data.y -=
+              Math.min(height / 2 - d.height, height / 2 - d2.data.height) / 8;
           } else {
-            d.x += Math.min(width / 2 - d.width , width / 2 - d2.data.width) / 4;
-            d2.data.x -= Math.min(width / 2 - d.width , width / 2 - d2.data.width) / 4;
+            d.x += Math.min(width / 2 - d.width, width / 2 - d2.data.width) / 4;
+            d2.data.x -=
+              Math.min(width / 2 - d.width, width / 2 - d2.data.width) / 4;
           }
-
         } else {
           d.isHighlighted = d2.data.isHighlighted = false;
         }
@@ -421,11 +417,6 @@ export function loadGraph(
       nby2 = b.y2 + perSideMargin;
 
     // taken from https://developer.mozilla.org/en-US/docs/Games/Techniques/2D_collision_detection @see Axis-Aligned Bounding Box
-    return (
-      nax1 < nbx2 && 
-      nax2 > nbx1 && 
-      nay1 < nby2 && 
-      nay2 > nby1
-    );
+    return nax1 < nbx2 && nax2 > nbx1 && nay1 < nby2 && nay2 > nby1;
   }
 }
