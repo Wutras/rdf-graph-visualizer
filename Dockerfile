@@ -6,8 +6,8 @@ COPY . .
 RUN npm ci
 
 ENV HTTPS=true
-ENV SSL_CRT_FILE=nginx/certs/webengineering.ins.hs-anhalt.de.cert
-ENV SSL_KEY_FILE=nginx/certs/webengineering.ins.hs-anhalt.de.key
+ENV SSL_CRT_FILE=/cloudtech/webengineering.ins.hs-anhalt.de.cert
+ENV SSL_KEY_FILE=/cloudtech/webengineering.ins.hs-anhalt.de.key
 
 ENTRYPOINT [ "npm", "start" ]
 

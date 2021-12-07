@@ -1,0 +1,20 @@
+stages:
+    - deploy
+
+deploy:
+    stage: deploy
+    tags:
+        - docker-deployment
+    only:
+        - master
+    before_script:
+        - container_name="rdf-graph-visualizer"
+        - container_port="3000"
+        - docker stop $container_name || true
+        - docker rm $container_name || true
+
+    script:
+        - docker build --tag $container_name .
+        - custom_port=$( ./cloudtech/get_free_port.sh )
+        - docker run --name $container_name -d -p $custom_port:$container_port $container_name:latest
+        - echo -e "\033[42mDein Port ist -> $custom_port\033[0m"
