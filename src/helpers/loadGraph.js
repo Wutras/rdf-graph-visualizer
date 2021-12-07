@@ -168,7 +168,8 @@ export function loadGraph(
     .force("link", linkForce)
     .force("center", d3.forceCenter(width / 2, height / 2))
     .force("spacing", spacing)
-    .force("attraction", attraction);
+    .force("attraction", attraction)
+    .force("bounds", boxingForce);
 
   let isDragging = false;
 
@@ -214,10 +215,16 @@ export function loadGraph(
       );
 
     linkTextRect
-      .attr("width", (d) => d.rectWidth = (getNodeText(d).length + padding) * nodeRadiusFactor)
+      .attr(
+        "width",
+        (d) =>
+          (d.rectWidth = (getNodeText(d).length + padding) * nodeRadiusFactor)
+      )
       .attr(
         "height",
-        d => d.rectHeight = Math.max(nodeRadiusFactor * zoomOffset.z, minNodeRadius) + padding
+        (d) =>
+          (d.rectHeight =
+            Math.max(nodeRadiusFactor * zoomOffset.z, minNodeRadius) + padding)
       );
 
     linkLine
@@ -285,12 +292,12 @@ export function loadGraph(
     nodes.forEach((d) => q.visit(collideRect(d)));
     nodeText
       .text((d) => (zoomOffset.z < 0.5 ? "" : getNodeText(d)))
-      .attr("x", nodeRadiusFactor * padding / 2)
+      .attr("x", (nodeRadiusFactor * padding) / 2)
       .attr("y", (d) => d.height / 1.5 + (padding * zoomOffset.z) / 10);
     linkText
       .text((d) => (zoomOffset.z < 0.5 ? "" : getNodeText(d)))
-      .attr("x", nodeRadiusFactor * padding / 2)
-      .attr("y", d => d.rectHeight / 1.5 + padding / 10);
+      .attr("x", (nodeRadiusFactor * padding) / 2)
+      .attr("y", (d) => d.rectHeight / 1.5 + padding / 10);
   }
 
   function dragstarted(d) {
@@ -387,7 +394,7 @@ export function loadGraph(
         d2.data.y2 = (d2.data.fy ?? d2.data.y) + d2.data.height;
         //console.log({d: {...d}, d2: {...d2.data}});
         if (overlap(d2.data, d)) {
-          if (Math.random() > 0.75) {
+          if (Math.random() > 0.73) {
             d.y +=
               Math.min(height / 2 - d.height, height / 2 - d2.data.height) / 8;
             d2.data.y -=
@@ -418,5 +425,12 @@ export function loadGraph(
 
     // taken from https://developer.mozilla.org/en-US/docs/Games/Techniques/2D_collision_detection @see Axis-Aligned Bounding Box
     return nax1 < nbx2 && nax2 > nbx1 && nay1 < nby2 && nay2 > nby1;
+  }
+
+  function boxingForce() {
+    for (let n of nodes) {
+      n.x = Math.max(0, Math.min((width - (n.width ?? 0)) * Math.max(1, zoomOffset.z), n.x));
+      n.y = Math.max(0, Math.min((height - (n.height ?? 0)) * Math.max(1, zoomOffset.z), n.y));
+    }
   }
 }
