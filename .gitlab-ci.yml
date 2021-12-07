@@ -14,7 +14,7 @@ deploy:
         - docker rm $container_name || true
 
     script:
-        - ls $CI_PROJECT_DIR
+        - ls $CI_PROJECT_DIR/nginx $CI_PROJECT_DIR/nginx/certs
         - cp /cloudtech/webengineering.ins.hs-anhalt.de.cert /cloudtech/webengineering.ins.hs-anhalt.de.key $CI_PROJECT_DIR/nginx/certs
         - docker build --tag $container_name .
         - custom_port=$( /cloudtech/get_free_port.sh )
