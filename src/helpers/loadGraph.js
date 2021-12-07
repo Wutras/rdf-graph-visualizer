@@ -30,6 +30,7 @@ export function loadGraph(
     maxOffset = 1000;
 
   const whitelist = [];
+  let hidden = {};
 
   let zoomOffset = {
     x: 0,
@@ -433,4 +434,85 @@ export function loadGraph(
       n.y = Math.max(0, Math.min((height - (n.height ?? 0)) * Math.max(1, zoomOffset.z), n.y));
     }
   }
+
+  function getAllLinkedNodes(originalNode) {
+    if (originalNode && !!d3.select(originalNode)) {
+      return (
+        link
+          // get list of links
+          .data()
+          // filter link list, so that only the edges remain that connect the original node with another node
+          .filter(
+            (edge) =>
+              edge.source === originalNode || edge.target === originalNode
+          )
+          // create a new list which will directly be returned containing only the nodes the original node is connected to
+          .map((edge) =>
+            edge.source !== originalNode ? edge.source : edge.target
+          )
+      );
+    }
+  }
+
+  function isDependentOnNode(nodeToCheck, nodeForComparison) {
+    // If the node to check for depedency is also the node that it may depend on,
+    // return false because a node cannot depend on itself
+    if (nodeToCheck === nodeForComparison) return false;
+
+    const linkedNodes = getAllLinkedNodes(nodeToCheck);
+
+    let visited = [];
+
+    // helper function to traverse through neighbour nodes,
+    // adding visited nodes to an array and checking, if there's *not* a path
+    // to the root node.
+    function traverse(linkedNode) {
+      if (
+        linkedNode !== nodeForComparison &&
+        visited.indexOf(linkedNode) === -1
+      ) {
+        visited.push(linkedNode);
+        return getAllLinkedNodes(linkedNode).every(traverse);
+      }
+      return true;
+    }
+
+    // If no node is in any way connected to the root node without passing
+    // through the node for comparison, it will return false, otherwise true
+    return linkedNodes.every(traverse);
+  }
+
+  function hideDependentNodes(sourceNode) {
+    const linkedNodes = getAllLinkedNodes(sourceNode);
+    let visited = [];
+
+    // helper function to hide all dependent nodes, as defined in isDependentOnNode, connected to a given node
+    // and add them to the `hidden` object which keeps track of hidden neighour nodes and links
+    // to be able to restore them later
+    function hideNodes(linkedNode) {
+      // if it's not been visited or it's dependent on the source node,
+      // add it to the visited list, to prevent endless recursion and call hideNodes on all neighbour nodes
+      // then remove it and add it to the `hidden` object
+      if (
+        linkedNode !== sourceNode &&
+        visited.indexOf(linkedNode) === -1 &&
+        isDependentOnNode(linkedNode, sourceNode)
+      ) {
+        visited.push(linkedNode);
+        const furtherNodes = getAllLinkedNodes(linkedNode);
+        furtherNodes.forEach(hideNodes);
+        const positionInData = graphData.nodes.indexOf(linkedNode);
+        const [removedNode] = graphData.nodes.splice(positionInData, 1);
+        hidden[sourceNode.company_id]?.nodes?.push?.(removedNode);
+        graphData.links = graphData.links.filter((edge) => {
+          const isAssociated =
+            edge.source !== linkedNode && edge.target !== linkedNode;
+          if (!isAssociated) hidden[sourceNode.company_id]?.links?.push?.(edge);
+          return isAssociated;
+        });
+      }
+    }
+
+    linkedNodes.forEach(hideNodes);
+  }  
 }
