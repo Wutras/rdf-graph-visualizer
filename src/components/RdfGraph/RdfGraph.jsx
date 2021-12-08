@@ -14,6 +14,8 @@ export default function RdfGraph({
   nodeCapacity,
   setSimulationData,
   setIsLoading,
+  showingNodeText,
+  showingLinkText,
 }) {
   const forceUpdate = useForceUpdate();
   const [infoMessage, setInfoMessage] = useState("");
@@ -27,20 +29,34 @@ export default function RdfGraph({
   function redrawGraph() {
     const svg = document.querySelector(`.hsa-rdf-graph`);
 
-    if (!!svg) svg.innerHTML = "";
+    while (!!svg?.lastChild) {
+      svg.removeChild(svg.lastChild);
+    }
+    console.log("Cleaned old children");
+
     requestAnimationFrame(() => {
       setIsLoading(true);
       requestAnimationFrame(() => {
-        loadGraph(graphData, prefixes, nodeCapacity, showInfo, setSimulationData);
+        while (!!svg?.lastChild) {
+          svg.removeChild(svg.lastChild);
+        }
+        loadGraph(
+          graphData,
+          prefixes,
+          nodeCapacity,
+          showInfo,
+          setSimulationData,
+          showingNodeText,
+          showingLinkText
+        );
         setIsLoading(false);
-      })
+      });
     });
   }
 
   useEffect(() => {
     window.addEventListener("resize", () => {
       if (graphData != null) {
-        forceUpdate();
         redrawGraph();
       }
     });

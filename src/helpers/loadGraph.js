@@ -9,7 +9,9 @@ export function loadGraph(
   prefixes,
   nodeCapacity,
   showInfo,
-  setSimulationData
+  setSimulationData,
+  showingNodeText,
+  showingLinkText
 ) {
   const svgElement = document.querySelector(".hsa-rdf-graph");
 
@@ -86,7 +88,9 @@ export function loadGraph(
 
   const rectangle = node.append("rect").attr("fill", getColour);
 
-  const nodeText = node.append("text").text(getNodeText);
+  const nodeText = showingNodeText
+    ? node.append("text").text(getNodeText)
+    : undefined;
 
   // #LINKS
   //* Link elements and their cosmetic attachments
@@ -101,25 +105,29 @@ export function loadGraph(
 
   const linkLine = link.append("line").attr("color", edgeColours.line);
 
-  const linkTextRect = linkTextG
-    .append("rect")
-    .attr("x", (d) => d.width - getNodeText(d).length)
-    .attr("width", getLinkTextBoxWidth)
-    .attr(
-      "height",
-      (d) =>
-        Math.max(
-          nodeRadiusFactor * zoomOffset.z + margin + padding,
-          minNodeRadius
-        ) - margin
-    )
-    .attr("fill", edgeColours.textBox);
+  const linkTextRect = showingLinkText
+    ? linkTextG
+        .append("rect")
+        .attr("x", (d) => d.width - getNodeText(d).length)
+        .attr("width", getLinkTextBoxWidth)
+        .attr(
+          "height",
+          (d) =>
+            Math.max(
+              nodeRadiusFactor * zoomOffset.z + margin + padding,
+              minNodeRadius
+            ) - margin
+        )
+        .attr("fill", edgeColours.textBox)
+    : undefined;
 
-  const linkText = linkTextG
-    .append("text")
-    .text(getNodeText)
-    .attr("y", minNodeRadius / 1.5)
-    .attr("x", (d) => d.width - getNodeText(d).length);
+  const linkText = showingLinkText
+    ? linkTextG
+        .append("text")
+        .text(getNodeText)
+        .attr("y", minNodeRadius / 1.5)
+        .attr("x", (d) => d.width - getNodeText(d).length)
+    : undefined;
 
   //* The arrow heads indicating the direction of the edges
   svg
@@ -161,7 +169,7 @@ export function loadGraph(
     .force("link", linkForce)
     .force("center", d3.forceCenter(width / 2, height / 2))
     .force("spacing", spacing)
-    .force("attraction", attraction)
+    //.force("attraction", attraction)
     .force("bounds", boxingForce);
 
   let isDragging = false;
@@ -207,21 +215,47 @@ export function loadGraph(
           ))
       );
 
-    linkTextRect
-      .attr(
-        "width",
-        (d) =>
-          (d.rectWidth = Math.max(
-            (getNodeText(d).length * zoomOffset.z + padding) * nodeRadiusFactor,
-            (minNodeRadius + padding) * nodeRadiusFactor
-          ))
-      )
-      .attr(
-        "height",
-        (d) =>
-          (d.rectHeight =
-            Math.max(nodeRadiusFactor * zoomOffset.z, minNodeRadius) + padding)
-      );
+    if (showingLinkText) {
+      linkTextRect
+        .attr(
+          "width",
+          (d) =>
+            (d.rectWidth = Math.max(
+              (getNodeText(d).length * zoomOffset.z + padding) *
+                nodeRadiusFactor,
+              (minNodeRadius + padding) * nodeRadiusFactor
+            ))
+        )
+        .attr(
+          "height",
+          (d) =>
+            (d.rectHeight =
+              Math.max(nodeRadiusFactor * zoomOffset.z, minNodeRadius) +
+              padding)
+        );
+
+      linkTextG
+        .attr(
+          "transform",
+          (d) =>
+            `translate(${
+              ((d.target.x + d.source.x) * zoomOffset.z) / 2 + zoomOffset.x
+            },${((d.target.y + d.source.y) * zoomOffset.z) / 2 + zoomOffset.y})`
+        )
+        .attr("display", (d) =>
+          d.source.isHighlighted ||
+          d.source.isHighlightedFixed ||
+          d.target.isHighlighted ||
+          d.target.isHighlightedFixed
+            ? ""
+            : "none"
+        );
+
+      linkText
+        .text((d) => getNodeText(d))
+        .attr("x", (nodeRadiusFactor * padding) / 2)
+        .attr("y", (d) => d.rectHeight / 1.5 + padding / 10);
+    }
 
     linkLine
       .attr("stroke", (d) =>
@@ -259,23 +293,6 @@ export function loadGraph(
         })`
     );
 
-    linkTextG
-      .attr(
-        "transform",
-        (d) =>
-          `translate(${
-            ((d.target.x + d.source.x) * zoomOffset.z) / 2 + zoomOffset.x
-          },${((d.target.y + d.source.y) * zoomOffset.z) / 2 + zoomOffset.y})`
-      )
-      .attr("display", (d) =>
-        d.source.isHighlighted ||
-        d.source.isHighlightedFixed ||
-        d.target.isHighlighted ||
-        d.target.isHighlightedFixed
-          ? ""
-          : "none"
-      );
-
     const q = quadtree()
       .x((d) => d.x)
       .y((d) => d.y)
@@ -286,14 +303,13 @@ export function loadGraph(
       .addAll(nodes);
 
     nodes.forEach((d) => q.visit(collideRect(d)));
-    nodeText
-      .text((d) => getNodeText(d))
-      .attr("x", (nodeRadiusFactor * padding) / 2)
-      .attr("y", (d) => d.height / 1.5 + (padding * zoomOffset.z) / 10);
-    linkText
-      .text((d) => getNodeText(d))
-      .attr("x", (nodeRadiusFactor * padding) / 2)
-      .attr("y", (d) => d.rectHeight / 1.5 + padding / 10);
+
+    if (showingNodeText) {
+      nodeText
+        .text((d) => getNodeText(d))
+        .attr("x", (nodeRadiusFactor * padding) / 2)
+        .attr("y", (d) => d.height / 1.5 + (padding * zoomOffset.z) / 10);
+    }
   }
 
   function dragstarted(d) {
@@ -328,13 +344,14 @@ export function loadGraph(
   //* Helper functions for determining element attributes
 
   function getNodeText(d) {
-    return d.rdfValue.length <= maxTextLength * zoomOffset.z / 1.4
+    // TODO: instead change font size
+    return d.rdfValue.length <= (maxTextLength * zoomOffset.z) / 1.4
       ? d.rdfValue
       : `${d.rdfValue.slice(
           0,
-          Math.floor((maxTextLength * zoomOffset.z / 1.4) / 2)
+          Math.floor((maxTextLength * zoomOffset.z) / 1.4 / 2)
         )}...${d.rdfValue.slice(
-          -Math.ceil((maxTextLength * zoomOffset.z / 1.4) / 2)
+          -Math.ceil((maxTextLength * zoomOffset.z) / 1.4 / 2)
         )}`;
   }
 
@@ -424,12 +441,12 @@ export function loadGraph(
   function boxingForce() {
     for (let n of nodes) {
       n.x = Math.max(
-        0,
-        Math.min((width - (n.width ?? 0)) * Math.max(1, zoomOffset.z), n.x)
+        -width,
+        Math.min((width - (n.width ?? 0)) * 2 * Math.max(1, zoomOffset.z), n.x)
       );
       n.y = Math.max(
-        0,
-        Math.min((height - (n.height ?? 0)) * Math.max(1, zoomOffset.z), n.y)
+        -height,
+        Math.min((height - (n.height ?? 0)) * 2 * Math.max(1, zoomOffset.z), n.y)
       );
     }
   }

@@ -7,11 +7,11 @@ export function fetchAllTriples(
   password
 ) {
 
-  if (endpointUrl.endsWith("/")) endpointUrl = endpointUrl.slice(0, -1);
+  const [,endpoint, database] = endpointUrl.match(/^(.*)\/([^/]*)$/)
 
   const stardog = new Stardog({
-    endpoint: endpointUrl,
-    database: "qanary",
+    endpoint,
+    database,
     auth: {
       user: username,
       pass: password,
@@ -20,6 +20,6 @@ export function fetchAllTriples(
 
   return stardog.query({
     query: "SELECT * WHERE { ?subject ?predicate ?object }",
-    graph: graphId,
+    graph: graphId.length > 1 ? graphId : undefined,
   }).then(response => response.results.bindings);
 }

@@ -7,7 +7,7 @@ export default function SettingsView({ settings }) {
     <div className="settings-view">
       <InputField
         prompt="SPARQL Endpoint:"
-        placeholder="e.g. https://query.wikidata.org/sparql"
+        placeholder="e.g. https://example.com/sparqlEndpoint/graph"
         onChange={(cE) => settings.sparqlEndpoint.setter(cE.target.value)}
         value={settings.sparqlEndpoint.value}
       />
@@ -41,6 +41,22 @@ export default function SettingsView({ settings }) {
           }
         }}
         checked={settings.usingDefaultPrefixes.value}
+      />
+      <InputField
+        prompt="Show node text:"
+        type="checkbox"
+        onChange={(cE) => {
+          settings.showingNodeText.setter(cE.target.checked);
+        }}
+        checked={settings.showingNodeText.value}
+      />
+      <InputField
+        prompt="Show link text:"
+        type="checkbox"
+        onChange={(cE) => {
+          settings.showingLinkText.setter(cE.target.checked);
+        }}
+        checked={settings.showingLinkText.value}
       />
       <InputField
         prompt="RDF Prefixes (In case of conflicts, the first prefix is used):"

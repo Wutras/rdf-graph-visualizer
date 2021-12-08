@@ -30,7 +30,9 @@ function App() {
     JSON.parse(localStorage.getItem("usingDefaultPrefixes")) ?? true
   );
   const [simulationData, setSimulationData] = useState(undefined);
-
+  const [showingNodeText, setShowingNodeText] = useState(JSON.parse(sessionStorage.getItem("showingNodeText")) ?? true);
+  const [showingLinkText, setShowingLinkText] = useState(JSON.parse(sessionStorage.getItem("showingLinkText")) ?? true);
+  
   const loadGraphData = useCallback(async () => {
     if (
       JSON.parse(localStorage.getItem("sparqlEndpoint")) !== sparqlEndpoint ||
@@ -69,6 +71,8 @@ function App() {
 
     sessionStorage.setItem("password", JSON.stringify(password));
     sessionStorage.setItem("nodeCapacity", JSON.stringify(nodeCapacity));
+    sessionStorage.setItem("showingNodeText", JSON.stringify(showingNodeText));
+    sessionStorage.setItem("showingLinkText", JSON.stringify(showingLinkText));
   }
 
   function restartSimulation() {
@@ -83,10 +87,9 @@ function App() {
   }
 
   const validSettingsExist =
-    sparqlEndpoint.length > 0 &&
+    /\/[^/]+$/.test(sparqlEndpoint) &&
     username.length > 0 &&
     password.length > 0 &&
-    graphURI.length > 0 &&
     !Number.isNaN(nodeCapacity) &&
     validateRDFPrefixes(prefixes);
 
@@ -143,6 +146,14 @@ function App() {
           usingDefaultPrefixes: {
             value: usingDefaultPrefixes,
             setter: setUsingDefaultPrefixes,
+          },
+          showingNodeText: {
+            value: showingNodeText,
+            setter: setShowingNodeText,
+          },
+          showingLinkText: {
+            value: showingLinkText,
+            setter: setShowingLinkText,
           },
         }}
         view={view}

@@ -18,6 +18,8 @@ export default function Main({ view, settings, graphData, setSimulationData }) {
           graphData={graphData}
           prefixes={parseTtlPrefixes(settings.prefixes.value)}
           nodeCapacity={settings.nodeCapacity.value}
+          showingNodeText={settings.showingNodeText.value}
+          showingLinkText={settings.showingLinkText.value}
           setSimulationData={setSimulationData}
           setIsLoading={setIsLoading}
         />
