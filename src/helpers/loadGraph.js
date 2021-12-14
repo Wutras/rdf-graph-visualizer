@@ -11,7 +11,9 @@ export function loadGraph(
   showInfo,
   setSimulationData,
   showingNodeText,
-  showingLinkText
+  showingLinkText,
+  blacklist,
+  whitelist,
 ) {
   const svgElement = document.querySelector(".hsa-rdf-graph");
 
@@ -27,11 +29,7 @@ export function loadGraph(
     margin = 0,
     maxTextLength = 32, // 32 is perfect if nodeRadiusFactor is 5
     nodeRadiusFactor = 9, // should not go below 11 as of right now
-    minNodeRadius = 20,
-    linkDistanceFactor = 200,
-    maxOffset = 1000;
-
-  const whitelist = [];
+    minNodeRadius = 20;
 
   let zoomOffset = {
     x: 0,
@@ -48,6 +46,7 @@ export function loadGraph(
     nodeRadiusFactor,
     padding,
     whitelist,
+    blacklist,
   });
 
   // TODO: Generate dummy graph of 5 nodes with all nodes being connected
@@ -157,10 +156,12 @@ export function loadGraph(
     .distanceMin((d) => (d.width + margin) / 2)
     .distanceMax((d) => (d.width + margin) * 1.5)
     .strength(-100);
-  const attraction = d3
+  /* Commented out for now. Might be added back in later if deemed necessary.
+     If the distribution seems good enough without it, remove this entire comment block.
+    const attraction = d3
     .forceManyBody()
     .distanceMin((d) => (d.width + margin) * 2)
-    .strength(50);
+    .strength(50); */
   // #SIMULATION
   const simulation = d3
     .forceSimulation()
@@ -401,11 +402,9 @@ export function loadGraph(
 
     return function (d2, x1, y1, x2, y2) {
       if (!!d2.length) return;
-      let dy;
       if (d2.data && d2.data !== d) {
         d2.data.x2 = (d2.data.fx ?? d2.data.x) + d2.data.width;
         d2.data.y2 = (d2.data.fy ?? d2.data.y) + d2.data.height;
-        //console.log({d: {...d}, d2: {...d2.data}});
         if (overlap(d2.data, d)) {
           if (Math.random() > 0.73) {
             d.y +=
@@ -446,7 +445,10 @@ export function loadGraph(
       );
       n.y = Math.max(
         -height,
-        Math.min((height - (n.height ?? 0)) * 2 * Math.max(1, zoomOffset.z), n.y)
+        Math.min(
+          (height - (n.height ?? 0)) * 2 * Math.max(1, zoomOffset.z),
+          n.y
+        )
       );
     }
   }

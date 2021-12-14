@@ -32,7 +32,9 @@ function App() {
   const [simulationData, setSimulationData] = useState(undefined);
   const [showingNodeText, setShowingNodeText] = useState(JSON.parse(sessionStorage.getItem("showingNodeText")) ?? true);
   const [showingLinkText, setShowingLinkText] = useState(JSON.parse(sessionStorage.getItem("showingLinkText")) ?? true);
-  
+  const [blacklist, setBlacklist] = useState(JSON.parse(localStorage.getItem("blacklist")) ?? []);
+  const [whitelist, setWhitelist] = useState(JSON.parse(localStorage.getItem("whitelist")) ?? []);
+
   const loadGraphData = useCallback(async () => {
     if (
       JSON.parse(localStorage.getItem("sparqlEndpoint")) !== sparqlEndpoint ||
@@ -68,6 +70,8 @@ function App() {
       "usingDefaultPrefixes",
       JSON.stringify(usingDefaultPrefixes)
     );
+    localStorage.setItem("blacklist", JSON.stringify(blacklist));
+    localStorage.setItem("whiteList", JSON.stringify(whitelist));
 
     sessionStorage.setItem("password", JSON.stringify(password));
     sessionStorage.setItem("nodeCapacity", JSON.stringify(nodeCapacity));
@@ -154,6 +158,14 @@ function App() {
           showingLinkText: {
             value: showingLinkText,
             setter: setShowingLinkText,
+          },
+          whitelist: {
+            value: whitelist,
+            setter: setWhitelist,
+          },
+          blacklist: {
+            value: blacklist,
+            setter: setBlacklist,
           },
         }}
         view={view}

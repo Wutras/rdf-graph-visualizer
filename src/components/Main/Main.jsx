@@ -17,6 +17,8 @@ export default function Main({ view, settings, graphData, setSimulationData }) {
         <RdfGraph
           graphData={graphData}
           prefixes={parseTtlPrefixes(settings.prefixes.value)}
+          whitelist={settings.whitelist.value}
+          blacklist={settings.blacklist.value}
           nodeCapacity={settings.nodeCapacity.value}
           showingNodeText={settings.showingNodeText.value}
           showingLinkText={settings.showingLinkText.value}

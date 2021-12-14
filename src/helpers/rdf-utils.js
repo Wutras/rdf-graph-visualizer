@@ -111,18 +111,30 @@ export function convertSparqlResultsToD3Graph({
   padding,
   nodeRadiusFactor,
   whitelist,
+  blacklist,
   nodeCapacity,
 }) {
+  console.debug(whitelist, blacklist);
   let nodes = [];
   let links = [];
 
   let uniqueId = 0;
   for (const { subject, predicate, object } of sparqlResults) {
     if (
+      !(
+        blacklist.includes(subject.value) ||
+        blacklist.includes(applyPrefixesToStatement(subject.value, prefixes)) ||
+        blacklist.includes(predicate.value) ||
+        blacklist.includes(
+          applyPrefixesToStatement(predicate.value, prefixes)
+        ) ||
+        blacklist.includes(object.value) ||
+        blacklist.includes(applyPrefixesToStatement(object.value, prefixes))
+      ) ||
       whitelist.includes(subject.value) ||
       whitelist.includes(predicate.value) ||
       whitelist.includes(object.value) ||
-      whitelist.length === 0
+      (whitelist.length === 0 && blacklist.length === 0)
     ) {
       nodes.push(
         {

@@ -35,7 +35,9 @@ export default function SettingsView({ settings }) {
         type="checkbox"
         onChange={(cE) => {
           settings.usingDefaultPrefixes.setter(cE.target.checked);
-          const defaultPrefixes = sessionStorage.getItem("defaultPrefixes") ?? "Default prefixes could not be loaded.";
+          const defaultPrefixes =
+            sessionStorage.getItem("defaultPrefixes") ??
+            "Default prefixes could not be loaded.";
           if (cE.target.checked === true && defaultPrefixes != null) {
             settings.prefixes.setter(defaultPrefixes);
           }
@@ -61,7 +63,7 @@ export default function SettingsView({ settings }) {
       <InputField
         prompt="RDF Prefixes (In case of conflicts, the first prefix is used):"
         placeholder={`e.g.
-PREFIX example: <http://example.com>
+PREFIX ex: <http://example.com/>
 PREFIX oa: <http://www.w3.org/ns/openannotation/core/>`}
         type="textarea"
         onChange={(cE) => {
@@ -69,6 +71,44 @@ PREFIX oa: <http://www.w3.org/ns/openannotation/core/>`}
           settings.usingDefaultPrefixes.setter(false);
         }}
         value={settings.prefixes.value}
+      />
+      <InputField
+        prompt="Blacklist (If one node in a triple matches, it's removed):"
+        placeholder={`e.g.
+URI: http://example.com/Example
+URI with previously defined prefixes: ex:Example
+Atomic value: ExampleValue`}
+        type="textarea"
+        onChange={(cE) => {
+          if (settings.whitelist.value.length === 0)
+            settings.blacklist.setter(
+              cE.target.value.split("\n").filter((el) => !/^\s*$/.test(el))
+            );
+          console.log({
+            blacklist: settings.blacklist.value,
+            whitelist: settings.whitelist.value,
+          });
+        }}
+        value={settings.blacklist.value.join("\n")}
+      />
+      <InputField
+        prompt="Whitelist (If one node in a triple matches, it's included):"
+        placeholder={`e.g.
+URI: http://example.com/Example
+URI with previously defined prefixes: ex:Example
+Atomic value: ExampleValue`}
+        type="textarea"
+        onChange={(cE) => {
+          if (settings.blacklist.value.length === 0)
+            settings.whitelist.setter(
+              cE.target.value.split("\n").filter((el) => !/^\s*$/.test(el))
+            );
+          console.log({
+            blacklist: settings.blacklist.value,
+            whitelist: settings.whitelist.value,
+          });
+        }}
+        value={settings.whitelist.value.join("\n")}
       />
       <InputField
         prompt="Node Capacity"

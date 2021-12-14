@@ -16,6 +16,8 @@ export default function RdfGraph({
   setIsLoading,
   showingNodeText,
   showingLinkText,
+  whitelist,
+  blacklist,
 }) {
   const forceUpdate = useForceUpdate();
   const [infoMessage, setInfoMessage] = useState("");
@@ -47,7 +49,9 @@ export default function RdfGraph({
           showInfo,
           setSimulationData,
           showingNodeText,
-          showingLinkText
+          showingLinkText,
+          blacklist,
+          whitelist,
         );
         setIsLoading(false);
       });
