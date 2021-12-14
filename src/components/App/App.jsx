@@ -39,8 +39,8 @@ function App() {
     if (
       JSON.parse(localStorage.getItem("sparqlEndpoint")) !== sparqlEndpoint ||
       JSON.parse(localStorage.getItem("username")) !== username ||
+      JSON.parse(localStorage.getItem("graphURI")) !== graphURI ||
       JSON.parse(sessionStorage.getItem("password")) !== password ||
-      JSON.parse(sessionStorage.getItem("nodeCapacity")) !== nodeCapacity ||
       graphData == null
     ) {
       try {
@@ -57,7 +57,7 @@ function App() {
         return;
       }
     }
-  }, [sparqlEndpoint, password, username, graphURI, graphData, nodeCapacity]);
+  }, [sparqlEndpoint, password, username, graphURI, graphData]);
 
   async function saveSettings() {
     loadGraphData();
@@ -77,6 +77,7 @@ function App() {
     sessionStorage.setItem("nodeCapacity", JSON.stringify(nodeCapacity));
     sessionStorage.setItem("showingNodeText", JSON.stringify(showingNodeText));
     sessionStorage.setItem("showingLinkText", JSON.stringify(showingLinkText));
+    
   }
 
   function restartSimulation() {

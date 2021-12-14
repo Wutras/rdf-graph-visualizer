@@ -4,7 +4,7 @@ import { quadtree } from "d3-quadtree";
 
 const d3 = window.d3;
 
-export function loadGraph(
+export function loadGraph({
   graphData,
   prefixes,
   nodeCapacity,
@@ -14,7 +14,7 @@ export function loadGraph(
   showingLinkText,
   blacklist,
   whitelist,
-) {
+}) {
   const svgElement = document.querySelector(".hsa-rdf-graph");
 
   //! This causes bugs sometimes in the settings view

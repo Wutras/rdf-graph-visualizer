@@ -1,12 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { InfoBox } from "..";
 import { loadGraph } from "../../helpers/loadGraph";
 import "./RdfGraph.css";
-
-function useForceUpdate() {
-  const [value, setValue] = useState(0);
-  return () => setValue(value + 1);
-}
 
 export default function RdfGraph({
   graphData,
@@ -19,7 +14,6 @@ export default function RdfGraph({
   whitelist,
   blacklist,
 }) {
-  const forceUpdate = useForceUpdate();
   const [infoMessage, setInfoMessage] = useState("");
   const [infoBoxVisible, setInfoBoxVisible] = useState(false);
 
@@ -28,13 +22,12 @@ export default function RdfGraph({
     setInfoBoxVisible(true);
   }
 
-  function redrawGraph() {
+  const redrawGraph = useCallback(() => {
     const svg = document.querySelector(`.hsa-rdf-graph`);
 
     while (!!svg?.lastChild) {
       svg.removeChild(svg.lastChild);
     }
-    console.log("Cleaned old children");
 
     requestAnimationFrame(() => {
       setIsLoading(true);
@@ -42,7 +35,7 @@ export default function RdfGraph({
         while (!!svg?.lastChild) {
           svg.removeChild(svg.lastChild);
         }
-        loadGraph(
+        loadGraph({
           graphData,
           prefixes,
           nodeCapacity,
@@ -52,11 +45,11 @@ export default function RdfGraph({
           showingLinkText,
           blacklist,
           whitelist,
-        );
+        });
         setIsLoading(false);
       });
     });
-  }
+  }, [blacklist, whitelist, graphData, nodeCapacity, prefixes, setSimulationData, showingLinkText, showingNodeText]);
 
   useEffect(() => {
     window.addEventListener("resize", () => {
@@ -64,6 +57,9 @@ export default function RdfGraph({
         redrawGraph();
       }
     });
+  }, []);
+
+  useEffect(() => {
     if (graphData != null) redrawGraph();
   }, [graphData]);
 

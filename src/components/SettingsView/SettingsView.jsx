@@ -80,14 +80,9 @@ URI with previously defined prefixes: ex:Example
 Atomic value: ExampleValue`}
         type="textarea"
         onChange={(cE) => {
-          if (settings.whitelist.value.length === 0)
-            settings.blacklist.setter(
-              cE.target.value.split("\n").filter((el) => !/^\s*$/.test(el))
-            );
-          console.log({
-            blacklist: settings.blacklist.value,
-            whitelist: settings.whitelist.value,
-          });
+          settings.blacklist.setter(
+            cE.target.value.split("\n").filter((el) => !/^\s*$/.test(el))
+          );
         }}
         value={settings.blacklist.value.join("\n")}
       />
@@ -99,14 +94,9 @@ URI with previously defined prefixes: ex:Example
 Atomic value: ExampleValue`}
         type="textarea"
         onChange={(cE) => {
-          if (settings.blacklist.value.length === 0)
-            settings.whitelist.setter(
-              cE.target.value.split("\n").filter((el) => !/^\s*$/.test(el))
-            );
-          console.log({
-            blacklist: settings.blacklist.value,
-            whitelist: settings.whitelist.value,
-          });
+          settings.whitelist.setter(
+            cE.target.value.split("\n").filter((el) => !/^\s*$/.test(el))
+          );
         }}
         value={settings.whitelist.value.join("\n")}
       />
