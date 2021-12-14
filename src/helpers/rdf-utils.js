@@ -114,26 +114,50 @@ export function convertSparqlResultsToD3Graph({
   blacklist,
   nodeCapacity,
 }) {
-  console.debug(whitelist, blacklist);
   let nodes = [];
   let links = [];
 
   let uniqueId = 0;
   for (const { subject, predicate, object } of sparqlResults) {
+    const prefixedSubjectValue = applyPrefixesToStatement(
+        subject.value,
+        prefixes
+      ),
+      prefixedPredicateValue = applyPrefixesToStatement(
+        predicate.value,
+        prefixes
+      ),
+      prefixedObjectValue = applyPrefixesToStatement(object.value, prefixes);
+    const isWhitelisted = whitelist.some((whitelistedString) => {
+      const whitelistedPattern = RegExp(whitelistedString, "mi");
+      return (
+        whitelistedPattern.test(subject.value) ||
+        whitelistedPattern.test(prefixedSubjectValue) ||
+        whitelistedPattern.test(predicate.value) ||
+        whitelistedPattern.test(prefixedPredicateValue) ||
+        whitelistedPattern.test(object.value) ||
+        whitelistedPattern.test(prefixedObjectValue)
+      );
+    });
+
+    const isBlacklisted = !blacklist.some((blacklistedString) => {
+      const blackListedPattern = RegExp(blacklistedString, "mi");
+      return (
+        blackListedPattern.test(subject.value) ||
+        blackListedPattern.test(prefixedSubjectValue) ||
+        blackListedPattern.test(predicate.value) ||
+        blackListedPattern.test(prefixedPredicateValue) ||
+        blackListedPattern.test(object.value) ||
+        blackListedPattern.test(prefixedObjectValue)
+      );
+    });
     if (
-      !(
-        blacklist.includes(subject.value) ||
-        blacklist.includes(applyPrefixesToStatement(subject.value, prefixes)) ||
-        blacklist.includes(predicate.value) ||
-        blacklist.includes(
-          applyPrefixesToStatement(predicate.value, prefixes)
-        ) ||
-        blacklist.includes(object.value) ||
-        blacklist.includes(applyPrefixesToStatement(object.value, prefixes))
-      ) ||
-      whitelist.includes(subject.value) ||
-      whitelist.includes(predicate.value) ||
-      whitelist.includes(object.value) ||
+      (isWhitelisted && blacklist.length === 0) ||
+      (isBlacklisted && whitelist.length === 0) ||
+      (isWhitelisted &&
+        isBlacklisted &&
+        whitelist.length > 0 &&
+        blacklist.length > 0) ||
       (whitelist.length === 0 && blacklist.length === 0)
     ) {
       nodes.push(

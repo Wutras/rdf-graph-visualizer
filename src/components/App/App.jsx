@@ -8,19 +8,19 @@ import { defaultPrefixURL } from "../../config.json";
 function App() {
   const [view, setView] = useState("main");
   const [sparqlEndpoint, setSparqlEndpoint] = useState(
-    JSON.parse(localStorage.getItem("sparqlEndpoint")) ?? ""
+    localStorage.getItem("sparqlEndpoint") ?? ""
   );
   const [username, setUsername] = useState(
-    JSON.parse(localStorage.getItem("username")) ?? ""
+    localStorage.getItem("username") ?? ""
   );
   const [password, setPassword] = useState(
-    JSON.parse(sessionStorage.getItem("password")) ?? ""
+    sessionStorage.getItem("password") ?? ""
   );
   const [graphURI, setGraphURI] = useState(
-    JSON.parse(localStorage.getItem("graphURI")) ?? ""
+    localStorage.getItem("graphURI") ?? ""
   );
   const [prefixes, setPrefixes] = useState(
-    JSON.parse(localStorage.getItem("prefixes")) ?? ""
+    localStorage.getItem("prefixes") ?? ""
   );
   const [graphData, setGraphData] = useState();
   const [nodeCapacity, setNodeCapacity] = useState(
@@ -30,17 +30,27 @@ function App() {
     JSON.parse(localStorage.getItem("usingDefaultPrefixes")) ?? true
   );
   const [simulationData, setSimulationData] = useState(undefined);
-  const [showingNodeText, setShowingNodeText] = useState(JSON.parse(sessionStorage.getItem("showingNodeText")) ?? true);
-  const [showingLinkText, setShowingLinkText] = useState(JSON.parse(sessionStorage.getItem("showingLinkText")) ?? true);
-  const [blacklist, setBlacklist] = useState(JSON.parse(localStorage.getItem("blacklist")) ?? []);
-  const [whitelist, setWhitelist] = useState(JSON.parse(localStorage.getItem("whitelist")) ?? []);
+  const [showingNodeText, setShowingNodeText] = useState(
+    JSON.parse(sessionStorage.getItem("showingNodeText")) ?? true
+  );
+  const [showingLinkText, setShowingLinkText] = useState(
+    JSON.parse(sessionStorage.getItem("showingLinkText")) ?? true
+  );
+  const [blacklist, setBlacklist] = useState(
+    localStorage.getItem("blacklist") ?? ""
+  );
+  const [whitelist, setWhitelist] = useState(
+    localStorage.getItem("whitelist") ?? ""
+  );
 
   const loadGraphData = useCallback(async () => {
     if (
-      JSON.parse(localStorage.getItem("sparqlEndpoint")) !== sparqlEndpoint ||
-      JSON.parse(localStorage.getItem("username")) !== username ||
-      JSON.parse(localStorage.getItem("graphURI")) !== graphURI ||
-      JSON.parse(sessionStorage.getItem("password")) !== password ||
+      localStorage.getItem("sparqlEndpoint") !== sparqlEndpoint ||
+      localStorage.getItem("username") !== username ||
+      localStorage.getItem("graphURI") !== graphURI ||
+      localStorage.getItem("blacklist") !== blacklist ||
+      localStorage.getItem("whitelist") !== whitelist ||
+      sessionStorage.getItem("password") !== password ||
       graphData == null
     ) {
       try {
@@ -57,27 +67,34 @@ function App() {
         return;
       }
     }
-  }, [sparqlEndpoint, password, username, graphURI, graphData]);
+  }, [
+    sparqlEndpoint,
+    password,
+    username,
+    graphURI,
+    graphData,
+    blacklist,
+    whitelist,
+  ]);
 
   async function saveSettings() {
     loadGraphData();
 
-    localStorage.setItem("sparqlEndpoint", JSON.stringify(sparqlEndpoint));
-    localStorage.setItem("username", JSON.stringify(username));
-    localStorage.setItem("graphURI", JSON.stringify(graphURI));
-    localStorage.setItem("prefixes", JSON.stringify(prefixes));
+    localStorage.setItem("sparqlEndpoint", sparqlEndpoint);
+    localStorage.setItem("username", username);
+    localStorage.setItem("graphURI", graphURI);
+    localStorage.setItem("prefixes", prefixes);
     localStorage.setItem(
       "usingDefaultPrefixes",
       JSON.stringify(usingDefaultPrefixes)
     );
-    localStorage.setItem("blacklist", JSON.stringify(blacklist));
-    localStorage.setItem("whiteList", JSON.stringify(whitelist));
+    localStorage.setItem("blacklist", blacklist);
+    localStorage.setItem("whitelist", whitelist);
 
-    sessionStorage.setItem("password", JSON.stringify(password));
+    sessionStorage.setItem("password", password);
     sessionStorage.setItem("nodeCapacity", JSON.stringify(nodeCapacity));
     sessionStorage.setItem("showingNodeText", JSON.stringify(showingNodeText));
     sessionStorage.setItem("showingLinkText", JSON.stringify(showingLinkText));
-    
   }
 
   function restartSimulation() {
@@ -88,7 +105,12 @@ function App() {
       d.fy = null;
     });
 
-    simulationData.simulation.alpha(1).alphaTarget(0.1).alphaMin(0.15).velocityDecay(0.4).restart();
+    simulationData.simulation
+      .alpha(1)
+      .alphaTarget(0.1)
+      .alphaMin(0.15)
+      .velocityDecay(0.4)
+      .restart();
   }
 
   const validSettingsExist =
@@ -101,7 +123,6 @@ function App() {
   if (!validSettingsExist && view !== "settings") setView("settings");
 
   useEffect(() => {
-    console.log("Mounted!");
     loadGraphData();
 
     const fetchDefaultPrefixes = async () => {

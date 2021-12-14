@@ -80,11 +80,9 @@ URI with previously defined prefixes: ex:Example
 Atomic value: ExampleValue`}
         type="textarea"
         onChange={(cE) => {
-          settings.blacklist.setter(
-            cE.target.value.split("\n").filter((el) => !/^\s*$/.test(el))
-          );
+          settings.blacklist.setter(cE.target.value);
         }}
-        value={settings.blacklist.value.join("\n")}
+        value={settings.blacklist.value}
       />
       <InputField
         prompt="Whitelist (If one node in a triple matches, it's included):"
@@ -94,11 +92,9 @@ URI with previously defined prefixes: ex:Example
 Atomic value: ExampleValue`}
         type="textarea"
         onChange={(cE) => {
-          settings.whitelist.setter(
-            cE.target.value.split("\n").filter((el) => !/^\s*$/.test(el))
-          );
+          settings.whitelist.setter(cE.target.value);
         }}
-        value={settings.whitelist.value.join("\n")}
+        value={settings.whitelist.value}
       />
       <InputField
         prompt="Node Capacity"

@@ -7,7 +7,7 @@ export default function Main({ view, settings, graphData, setSimulationData }) {
   const [isLoading, setIsLoading] = useState(true);
   useEffect(() => {
     if (view === "settings") setIsLoading(false);
-  }, [view])
+  }, [view]);
 
   return (
     <div className={"main" + (isLoading ? " loading" : "")}>
@@ -17,8 +17,12 @@ export default function Main({ view, settings, graphData, setSimulationData }) {
         <RdfGraph
           graphData={graphData}
           prefixes={parseTtlPrefixes(settings.prefixes.value)}
-          whitelist={settings.whitelist.value}
-          blacklist={settings.blacklist.value}
+          whitelist={settings.whitelist.value
+            .split("\n")
+            .filter((el) => !/^\s*$/.test(el))}
+          blacklist={settings.blacklist.value
+            .split("\n")
+            .filter((el) => !/^\s*$/.test(el))}
           nodeCapacity={settings.nodeCapacity.value}
           showingNodeText={settings.showingNodeText.value}
           showingLinkText={settings.showingLinkText.value}

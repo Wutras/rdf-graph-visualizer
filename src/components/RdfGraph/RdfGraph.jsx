@@ -49,7 +49,7 @@ export default function RdfGraph({
         setIsLoading(false);
       });
     });
-  }, [blacklist, whitelist, graphData, nodeCapacity, prefixes, setSimulationData, showingLinkText, showingNodeText]);
+  }, [blacklist, whitelist, graphData, nodeCapacity, prefixes, showingLinkText, showingNodeText]);
 
   useEffect(() => {
     window.addEventListener("resize", () => {

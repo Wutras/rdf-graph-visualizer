@@ -367,7 +367,6 @@ export function loadGraph({
   }
 
   function updateOnce() {
-    console.debug("once");
     simulation.velocityDecay(1).restart().tick();
     simulation.velocityDecay(0.4).restart();
   }
