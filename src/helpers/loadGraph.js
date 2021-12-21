@@ -1,4 +1,4 @@
-import { convertSparqlResultsToD3Graph } from "./rdf-utils";
+import { convertSparqlResultsToD3Graph, filterLooseLinks } from "./rdf-utils";
 import { nodeColours, edgeColours } from "../config.json";
 import { quadtree } from "d3-quadtree";
 
@@ -39,7 +39,7 @@ export function loadGraph({
     z: 1,
   };
 
-  let { nodes, links } = convertSparqlResultsToD3Graph({
+  const { nodes, links, allNodes, allLinks } = convertSparqlResultsToD3Graph({
     sparqlResults: graphData,
     prefixes,
     margin,
@@ -51,6 +51,9 @@ export function loadGraph({
     blacklist,
   });
 
+  let linkData = links,
+    nodeData = nodes;
+
   // TODO: Generate dummy graph of 5 nodes with all nodes being connected
 
   // #CONTAINERS
@@ -60,7 +63,7 @@ export function loadGraph({
   let linkTextG = svg
     .append("g")
     .selectAll("g")
-    .data(links)
+    .data(linkData)
     .enter()
     .append("g");
 
@@ -70,21 +73,21 @@ export function loadGraph({
     .attr("stroke", "#fff")
     .attr("stroke-width", "0.1px")
     .selectAll("g")
-    .data(nodes)
+    .data(nodeData)
     .enter()
     .append("g")
     .on("click", (d) => {
       if (isDragging) return;
-      showInfo({ type: d.rdfType, value: d.rdfValue, label: d.rdfsLabel });
+      showInfo({ type: d._rdfType, value: d._rdfValue, label: d._rdfsLabel });
       toggleNode(d);
-      d.isHighlightedFixed = !d.isHighlightedFixed;
+      d._isHighlightedFixed = !d._isHighlightedFixed;
     })
     .on("mouseover", (d) => {
-      d.isHighlighted = true;
+      d._isHighlighted = true;
       if (!isDragging) updateOnce();
     })
     .on("mouseout", (d) => {
-      d.isHighlighted = false;
+      d._isHighlighted = false;
       if (!isDragging) updateOnce();
     });
 
@@ -101,7 +104,7 @@ export function loadGraph({
     .attr("stroke-width", "2px")
     .attr("stroke-opacity", "0.6")
     .selectAll("line")
-    .data(links)
+    .data(linkData)
     .enter()
     .append("g");
 
@@ -110,7 +113,7 @@ export function loadGraph({
   let linkTextRect = showingLinkText
     ? linkTextG
         .append("rect")
-        .attr("x", (d) => d.width - getNodeText(d).length)
+        .attr("x", (d) => d._width - getNodeText(d).length)
         .attr("width", getLinkTextBoxWidth)
         .attr(
           "height",
@@ -128,7 +131,7 @@ export function loadGraph({
         .append("text")
         .text(getNodeText)
         .attr("y", minNodeRadius / 1.5)
-        .attr("x", (d) => d.width - getNodeText(d).length)
+        .attr("x", (d) => d._width - getNodeText(d).length)
     : undefined;
 
   //* The arrow heads indicating the direction of the edges
@@ -156,14 +159,14 @@ export function loadGraph({
 
   const spacing = d3
     .forceManyBody()
-    .distanceMin((d) => (d.width + margin) / 2)
-    .distanceMax((d) => (d.width + margin) * 1.5)
+    .distanceMin((d) => (d._width + margin) / 2)
+    .distanceMax((d) => (d._width + margin) * 1.5)
     .strength(-100);
   /* Commented out for now. Might be added back in later if deemed necessary.
      If the distribution seems good enough without it, remove this entire comment block.
     const attraction = d3
     .forceManyBody()
-    .distanceMin((d) => (d.width + margin) * 2)
+    .distanceMin((d) => (d._width + margin) * 2)
     .strength(50); */
   // #SIMULATION
   const simulation = d3
@@ -196,16 +199,16 @@ export function loadGraph({
 
   drag_handler(node);
 
-  simulation.nodes(nodes).on("tick", ticked);
+  simulation.nodes(nodeData).on("tick", ticked);
 
-  simulation.force("link").links(links);
+  simulation.force("link").links(linkData);
 
   function ticked() {
     rectangle
       .attr(
         "width",
         (d) =>
-          (d.width = Math.max(
+          (d._width = Math.max(
             (getNodeText(d).length * zoomOffset.z + padding) * nodeRadiusFactor,
             (minNodeRadius + padding) * nodeRadiusFactor
           ))
@@ -213,7 +216,7 @@ export function loadGraph({
       .attr(
         "height",
         (d) =>
-          (d.height = Math.max(
+          (d._height = Math.max(
             nodeRadiusFactor * zoomOffset.z + padding,
             minNodeRadius
           ))
@@ -224,7 +227,7 @@ export function loadGraph({
         .attr(
           "width",
           (d) =>
-            (d.rectWidth = Math.max(
+            (d._rectWidth = Math.max(
               (getNodeText(d).length * zoomOffset.z + padding) *
                 nodeRadiusFactor,
               (minNodeRadius + padding) * nodeRadiusFactor
@@ -233,7 +236,7 @@ export function loadGraph({
         .attr(
           "height",
           (d) =>
-            (d.rectHeight =
+            (d._rectHeight =
               Math.max(nodeRadiusFactor * zoomOffset.z, minNodeRadius) +
               padding)
         );
@@ -247,10 +250,10 @@ export function loadGraph({
             },${((d.target.y + d.source.y) * zoomOffset.z) / 2 + zoomOffset.y})`
         )
         .attr("display", (d) =>
-          d.source.isHighlighted ||
-          d.source.isHighlightedFixed ||
-          d.target.isHighlighted ||
-          d.target.isHighlightedFixed
+          d.source._isHighlighted ||
+          d.source._isHighlightedFixed ||
+          d.target._isHighlighted ||
+          d.target._isHighlightedFixed
             ? ""
             : "none"
         );
@@ -258,33 +261,33 @@ export function loadGraph({
       linkText
         .text((d) => getNodeText(d))
         .attr("x", (nodeRadiusFactor * padding) / 2)
-        .attr("y", (d) => d.rectHeight / 1.5 + padding / 10);
+        .attr("y", (d) => d._rectHeight / 1.5 + padding / 10);
     }
 
     linkLine
       .attr("stroke", (d) =>
-        d.target.isHighlighted ||
-        d.source.isHighlighted ||
-        d.target.isHighlightedFixed ||
-        d.source.isHighlightedFixed
+        d.target._isHighlighted ||
+        d.source._isHighlighted ||
+        d.target._isHighlightedFixed ||
+        d.source._isHighlightedFixed
           ? "#F00"
           : "#000"
       )
       .attr("marker-end", (d) =>
-        d.target.isHighlighted ||
-        d.source.isHighlighted ||
-        d.target.isHighlightedFixed ||
-        d.source.isHighlightedFixed
+        d.target._isHighlighted ||
+        d.source._isHighlighted ||
+        d.target._isHighlightedFixed ||
+        d.source._isHighlightedFixed
           ? "url(#arrowhead)"
           : ""
       )
       .attr(
         "x1",
-        (d) => d.source.x * zoomOffset.z + zoomOffset.x + d.source.width / 2
+        (d) => d.source.x * zoomOffset.z + zoomOffset.x + d.source._width / 2
       )
       .attr(
         "x2",
-        (d) => d.target.x * zoomOffset.z + zoomOffset.x + d.target.width / 2
+        (d) => d.target.x * zoomOffset.z + zoomOffset.x + d.target._width / 2
       )
       .attr("y1", (d) => d.source.y * zoomOffset.z + zoomOffset.y)
       .attr("y2", (d) => d.target.y * zoomOffset.z + zoomOffset.y);
@@ -304,15 +307,15 @@ export function loadGraph({
         [-1, -1],
         [width + 1, height + 1],
       ])
-      .addAll(nodes);
+      .addAll(nodeData);
 
-    nodes.forEach((d) => q.visit(collideRect(d)));
+    nodeData.forEach((d) => q.visit(collideRect(d)));
 
     if (showingNodeText) {
       nodeText
         .text((d) => getNodeText(d))
         .attr("x", (nodeRadiusFactor * padding) / 2)
-        .attr("y", (d) => d.height / 1.5 + (padding * zoomOffset.z) / 10);
+        .attr("y", (d) => d._height / 1.5 + (padding * zoomOffset.z) / 10);
     }
   }
 
@@ -333,7 +336,7 @@ export function loadGraph({
   function dragended(d) {
     isDragging = false;
     if (!d3.event.active) updateOnce();
-    resetSimulationParemeters();
+    resetSimulationParameters();
   }
 
   function zoomed() {
@@ -349,24 +352,24 @@ export function loadGraph({
 
   function getNodeText(d) {
     // TODO: instead change font size
-    return d.rdfValue.length <= (maxTextLength * zoomOffset.z) / 1.4
-      ? d.rdfValue
-      : `${d.rdfValue.slice(
+    return d._rdfValue.length <= (maxTextLength * zoomOffset.z) / 1.4
+      ? d._rdfValue
+      : `${d._rdfValue.slice(
           0,
           Math.floor((maxTextLength * zoomOffset.z) / 1.4 / 2)
-        )}...${d.rdfValue.slice(
+        )}...${d._rdfValue.slice(
           -Math.ceil((maxTextLength * zoomOffset.z) / 1.4 / 2)
         )}`;
   }
 
   function getLinkTextBoxWidth(d) {
-    d.boxWidth =
-      Math.max(d.rdfValue.length, minNodeRadius) * nodeRadiusFactor + padding;
-    return d.boxWidth;
+    d._boxWidth =
+      Math.max(d._rdfValue.length, minNodeRadius) * nodeRadiusFactor + padding;
+    return d._boxWidth;
   }
 
   function getColour(d) {
-    return nodeColours[d.rdfType];
+    return nodeColours[d._rdfType];
   }
 
   function updateOnce() {
@@ -383,7 +386,7 @@ export function loadGraph({
       .restart();
   }
 
-  function resetSimulationParemeters() {
+  function resetSimulationParameters() {
     simulation
       .alphaTarget(0)
       .alphaMin(0.001)
@@ -394,29 +397,32 @@ export function loadGraph({
   }
 
   function collideRect(d) {
-    d.x2 = (d.fx ?? d.x) + d.width;
-    d.y2 = (d.fy ?? d.y) + d.height;
+    d._x2 = (d.fx ?? d.x) + d._width;
+    d._y2 = (d.fy ?? d.y) + d._height;
 
     const nx1 = (d.fx ?? d.x) - (padding + margin) / 2,
-      nx2 = d.x2 + (padding + margin) / 2,
+      nx2 = d._x2 + (padding + margin) / 2,
       ny1 = (d.fy ?? d.y) - (padding + margin) / 2,
-      ny2 = d.y2 + (padding + margin) / 2;
+      ny2 = d._y2 + (padding + margin) / 2;
 
     return function (d2, x1, y1, x2, y2) {
       if (!!d2.length) return;
       if (d2.data && d2.data !== d) {
-        d2.data.x2 = (d2.data.fx ?? d2.data.x) + d2.data.width;
-        d2.data.y2 = (d2.data.fy ?? d2.data.y) + d2.data.height;
+        d2.data._x2 = (d2.data.fx ?? d2.data.x) + d2.data.width;
+        d2.data._y2 = (d2.data.fy ?? d2.data.y) + d2.data.height;
         if (overlap(d2.data, d)) {
           if (Math.random() > 0.73) {
             d.y +=
-              Math.min(height / 2 - d.height, height / 2 - d2.data.height) / 8;
+              Math.min(height / 2 - d._height, height / 2 - d2.data._height) /
+              8;
             d2.data.y -=
-              Math.min(height / 2 - d.height, height / 2 - d2.data.height) / 8;
+              Math.min(height / 2 - d._height, height / 2 - d2.data._height) /
+              8;
           } else {
-            d.x += Math.min(width / 2 - d.width, width / 2 - d2.data.width) / 4;
+            d.x +=
+              Math.min(width / 2 - d._width, width / 2 - d2.data._width) / 4;
             d2.data.x -=
-              Math.min(width / 2 - d.width, width / 2 - d2.data.width) / 4;
+              Math.min(width / 2 - d._width, width / 2 - d2.data._width) / 4;
           }
         }
       }
@@ -440,7 +446,7 @@ export function loadGraph({
   }
 
   function boxingForce() {
-    for (let n of nodes) {
+    for (let n of nodeData) {
       n.x = Math.max(
         -width,
         Math.min((width - (n.width ?? 0)) * 2 * Math.max(1, zoomOffset.z), n.x)
@@ -458,9 +464,7 @@ export function loadGraph({
   function getAllLinkedNodes(originalNode) {
     if (originalNode && !!d3.select(originalNode)) {
       return (
-        link
-          // get list of links
-          .data()
+        linkData
           // filter link list, so that only the edges remain that connect the original node with another node
           .filter(
             (edge) =>
@@ -474,66 +478,90 @@ export function loadGraph({
     }
   }
 
-  function isDependentOnNode(nodeToCheck, nodeForComparison) {
-    // If the node to check for depedency is also the node that it may depend on,
-    // return false because a node cannot depend on itself
-    if (nodeToCheck === nodeForComparison) return false;
-
-    const linkedNodes = getAllLinkedNodes(nodeToCheck);
-
+  function getPartialGraphs(splitNode) {
     let visited = [];
+    let neighbourNodes = getAllLinkedNodes(splitNode);
+    let partialGraphs = [];
 
-    // helper function to traverse through neighbour nodes,
-    // adding visited nodes to an array and checking, if there's *not* a path
-    // to the root node.
-    function traverse(linkedNode) {
-      if (
-        linkedNode !== nodeForComparison &&
-        visited.indexOf(linkedNode) === -1
-      ) {
-        visited.push(linkedNode);
-        return getAllLinkedNodes(linkedNode).every(traverse);
+    function traverse(d) {
+      function addToCurrentPartialGraph(n) {
+        partialGraphs[partialGraphs.length - 1].push(n);
       }
-      return true;
+      // already been handled; redundancy would be error-prone
+      if (visited.includes(d)) return;
+      visited.push(d);
+      if (d === splitNode) return;
+      const nextNodes = getAllLinkedNodes(d);
+      // leafs need no handling of neighbours
+      if (nextNodes.length === 1) {
+        addToCurrentPartialGraph(d);
+        return;
+      }
+
+      if (neighbourNodes.includes(d)) {
+        neighbourNodes.splice(neighbourNodes.indexOf(d), 1);
+      }
+
+      for (const nextNode of nextNodes) {
+        traverse(nextNode);
+      }
+
+      addToCurrentPartialGraph(d);
     }
 
-    // If no node is in any way connected to the root node without passing
-    // through the node for comparison, it will return false, otherwise true
-    return linkedNodes.every(traverse);
+    while (neighbourNodes.length > 0) {
+      partialGraphs.push([]);
+      const [nextNode] = neighbourNodes.splice(0, 1);
+      traverse(nextNode);
+    }
+
+    return {
+      partialGraphs,
+      looseNodes: nodeData.filter(
+        (d) => !visited.includes(d) && d !== splitNode
+      ),
+    };
   }
 
-  function hideDependentNodes(sourceNode) {
-    const linkedNodes = getAllLinkedNodes(sourceNode);
-    let visited = [];
-
-    // helper function to hide all dependent nodes, as defined in isDependentOnNode, connected to a given node
-    // and add them to the `hidden` object which keeps track of hidden neighour nodes and links
-    // to be able to restore them later
-    function hideNodes(linkedNode) {
-      // if it's not been visited or it's dependent on the source node,
-      // add it to the visited list, to prevent endless recursion and call hideNodes on all neighbour nodes
-      // then remove it and add it to the `hidden` object
+  function hideSmallerPartialGraphs(splitNode) {
+    const { partialGraphs, looseNodes } = getPartialGraphs(splitNode);
+    let biggestPartialGraphIndex = 0;
+    for (let gIndex = 1; gIndex < partialGraphs.length; gIndex++) {
       if (
-        linkedNode !== sourceNode &&
-        visited.indexOf(linkedNode) === -1 &&
-        isDependentOnNode(linkedNode, sourceNode)
-      ) {
-        visited.push(linkedNode);
-        const furtherNodes = getAllLinkedNodes(linkedNode);
-        furtherNodes.forEach(hideNodes);
-        const positionInData = nodes.indexOf(linkedNode);
-        const [removedNode] = nodes.splice(positionInData, 1);
-        hidden[sourceNode.id]?.nodes?.push?.(removedNode);
-        links = links.filter((edge) => {
-          const isAssociated =
-            edge.source !== linkedNode && edge.target !== linkedNode;
-          if (!isAssociated) hidden[sourceNode.id]?.links?.push?.(edge);
-          return isAssociated;
-        });
-      }
+        partialGraphs[gIndex].length >
+        partialGraphs[biggestPartialGraphIndex].length
+      )
+        biggestPartialGraphIndex = gIndex;
     }
 
-    linkedNodes.forEach(hideNodes);
+    const [biggestPartialGraph] = partialGraphs.splice(
+      biggestPartialGraphIndex,
+      1
+    );
+    nodeData = [...biggestPartialGraph, ...looseNodes, splitNode];
+    const filterResults = filterLooseLinks(linkData, nodeData);
+    linkData = filterResults[0];
+    splitNode._hidden = {
+      nodes: partialGraphs,
+      links: filterResults[1],
+    };
+  }
+
+  function toggleNode(d) {
+    if (d._isCollapsed) {
+      expandNode(d);
+      d._isCollapsed = false;
+    } else {
+      hideSmallerPartialGraphs(d);
+      d._isCollapsed = true;
+    }
+    drawGraph();
+  }
+
+  function expandNode(d) {
+    nodeData = [...nodeData, ...d._hidden.nodes.flat()];
+    linkData = [...d._hidden.links, ...linkData];
+    d._hidden = {};
   }
 
   function drawGraph() {
@@ -542,15 +570,14 @@ export function loadGraph({
     }
     node.exit().remove();
     link.exit().remove();
-    simulation.stop();
-    simulation.nodes(nodes).restart();
-    link.links = links;
-
-    // #CONTAINERS
-    //* container groups ensuring correct rendering order and therefore correct layering
     linkG = svg.append("g");
     nodeG = svg.append("g");
-    linkTextG = svg.append("g").selectAll("g").data(links).enter().append("g");
+    linkTextG = svg
+      .append("g")
+      .selectAll("g")
+      .data(linkData)
+      .enter()
+      .append("g");
 
     // #NODES
     //* The node elements and their cosmetic attachments
@@ -558,33 +585,31 @@ export function loadGraph({
       .attr("stroke", "#fff")
       .attr("stroke-width", "0.1px")
       .selectAll("g")
-      .data(nodes)
+      .data(nodeData)
       .enter()
       .append("g")
       .on("click", (d) => {
         if (isDragging) return;
-        showInfo({ type: d.rdfType, value: d.rdfValue, label: d.rdfsLabel });
-        d.isHighlightedFixed = !d.isHighlightedFixed;
+        showInfo({ type: d._rdfType, value: d._rdfValue, label: d._rdfsLabel });
+        toggleNode(d);
+        d._isHighlightedFixed = !d._isHighlightedFixed;
       })
       .on("mouseover", (d) => {
-        d.isHighlighted = true;
+        d._isHighlighted = true;
         if (!isDragging) updateOnce();
       })
       .on("mouseout", (d) => {
-        d.isHighlighted = false;
+        d._isHighlighted = false;
         if (!isDragging) updateOnce();
       });
 
+    drag_handler(node);
+
     rectangle = node.append("rect").attr("fill", getColour);
 
-    nodeText = node.append("text").text(getNodeText);
-
-    node
-      .append("title")
-      .text(
-        (d) =>
-          `type: ${d.rdfType}, value: ${d.rdfValue}, linkCount: ${d.linkCount}`
-      );
+    nodeText = showingNodeText
+      ? node.append("text").text(getNodeText)
+      : undefined;
 
     // #LINKS
     //* Link elements and their cosmetic attachments
@@ -593,31 +618,35 @@ export function loadGraph({
       .attr("stroke-width", "2px")
       .attr("stroke-opacity", "0.6")
       .selectAll("line")
-      .data(links)
+      .data(linkData)
       .enter()
       .append("g");
 
     linkLine = link.append("line").attr("color", edgeColours.line);
 
-    linkTextRect = linkTextG
-      .append("rect")
-      .attr("x", (d) => d.width - getNodeText(d).length)
-      .attr("width", getLinkTextBoxWidth)
-      .attr(
-        "height",
-        (d) =>
-          Math.max(
-            nodeRadiusFactor * zoomOffset.z + margin + padding,
-            minNodeRadius
-          ) - margin
-      )
-      .attr("fill", edgeColours.textBox);
+    linkTextRect = showingLinkText
+      ? linkTextG
+          .append("rect")
+          .attr("x", (d) => d._width - getNodeText(d).length)
+          .attr("width", getLinkTextBoxWidth)
+          .attr(
+            "height",
+            (d) =>
+              Math.max(
+                nodeRadiusFactor * zoomOffset.z + margin + padding,
+                minNodeRadius
+              ) - margin
+          )
+          .attr("fill", edgeColours.textBox)
+      : undefined;
 
-    linkText = linkTextG
-      .append("text")
-      .text(getNodeText)
-      .attr("y", minNodeRadius / 1.5)
-      .attr("x", (d) => d.width - getNodeText(d).length);
+    linkText = showingLinkText
+      ? linkTextG
+          .append("text")
+          .text(getNodeText)
+          .attr("y", minNodeRadius / 1.5)
+          .attr("x", (d) => d._width - getNodeText(d).length)
+      : undefined;
 
     //* The arrow heads indicating the direction of the edges
     svg
@@ -635,25 +664,7 @@ export function loadGraph({
       .attr("d", "M 0,-5 L 10 ,0 L 0,5")
       .attr("fill", edgeColours.arrowHead)
       .style("stroke", "#F00");
-  }
 
-  function collapseNode(nodeToCollapse) {
-    nodeToCollapse._isCollapsed = true;
-    hidden[nodeToCollapse.id] = {
-      nodes: [],
-      links: [],
-    };
-    hideDependentNodes(nodeToCollapse);
-    drawGraph();
-  }
-
-  
-
-  function toggleNode(nodeToToggle) {
-    if (nodeToToggle._isCollapsed) {
-      //expandNode(nodeToToggle);
-    } else {
-      collapseNode(nodeToToggle);
-    }
+    resetSimulationParameters();
   }
 }

@@ -163,13 +163,13 @@ export function convertSparqlResultsToD3Graph({
       nodes.push(
         {
           id: subject.value,
-          rdfsLabel:
+          _rdfsLabel:
             predicate.value === "http://www.w3.org/2000/01/rdf-schema#label"
               ? object.value
               : undefined,
-          rdfValue: applyPrefixesToStatement(subject.value, prefixes),
-          rdfType: subject.type,
-          radius:
+          _rdfValue: applyPrefixesToStatement(subject.value, prefixes),
+          _rdfType: subject.type,
+          _radius:
             Math.min(
               applyPrefixesToStatement(subject.value, prefixes).length,
               maxTextLength
@@ -183,9 +183,9 @@ export function convertSparqlResultsToD3Graph({
             object.type === "literal"
               ? object.value + ++uniqueId
               : object.value,
-          rdfValue: applyPrefixesToStatement(object.value, prefixes),
-          rdfType: object.type,
-          radius:
+          _rdfValue: applyPrefixesToStatement(object.value, prefixes),
+          _rdfType: object.type,
+          _radius:
             Math.min(
               applyPrefixesToStatement(object.value, prefixes).length,
               maxTextLength
@@ -201,27 +201,38 @@ export function convertSparqlResultsToD3Graph({
           object.type === "literal" ? object.value + uniqueId : object.value,
 
         id: predicate.value,
-        rdfValue: applyPrefixesToStatement(predicate.value, prefixes),
-        rdfType: predicate.type,
+        _rdfValue: applyPrefixesToStatement(predicate.value, prefixes),
+        _rdfType: predicate.type,
       });
     }
   }
 
-  // only leave unique nodes
-  nodes = [...new Map(nodes.map((o) => [o.id, o])).values()];
+  // only leave unique nodes and save uncapped nodes and links
+  const allNodes = (nodes = [...new Map(nodes.map((o) => [o.id, o])).values()]);
+  const allLinks = filterDuplicateLinks(links);
 
   // limit number of nodes
   nodes = nodes.slice(0, nodeCapacity);
 
   // filter out links that are now no longer connected
-  links = links.filter(
-    (link) =>
-      nodes.find((node) => link.source === node.id) != null &&
-      nodes.find((node) => link.target === node.id) != null
-  );
+  [links] = filterLooseLinks(links, nodes);
 
   // filter out duplicate links
-  links = links.filter(
+  links = filterDuplicateLinks(links);
+
+  // add counter to nodes for all links
+  nodes = nodes.map((node) => getNumberOfLinks(node, links));
+
+  return {
+    nodes,
+    links,
+    allNodes,
+    allLinks,
+  };
+}
+
+function filterDuplicateLinks(links) {
+  return links.filter(
     (link, i) =>
       links
         .slice(i + 1)
@@ -230,12 +241,23 @@ export function convertSparqlResultsToD3Graph({
             link.source === otherLink.source && link.target === otherLink.target
         ) == null
   );
+}
 
-  // add counter to nodes for all links
-  nodes = nodes.map((node) => getNumberOfLinks(node, links));
+export function filterLooseLinks(links, nodes) {
+  let filtered = [],
+    rest = [];
+  for (const link of links) {
+    if (
+      nodes.find((node) => link.source === node.id || link.source === node) !=
+        null &&
+      nodes.find((node) => link.target === node.id || link.target === node) !=
+        null
+    ) {
+      filtered.push(link);
+    } else {
+      rest.push(link);
+    }
+  }
 
-  return {
-    nodes,
-    links,
-  };
+  return [filtered, rest];
 }
