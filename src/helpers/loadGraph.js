@@ -31,15 +31,13 @@ export function loadGraph({
     nodeRadiusFactor = 9, // should not go below 11 as of right now
     minNodeRadius = 20;
 
-  let hidden = {};
-
   let zoomOffset = {
     x: 0,
     y: 0,
     z: 1,
   };
 
-  const { nodes, links, allNodes, allLinks } = convertSparqlResultsToD3Graph({
+  const { nodes, links } = convertSparqlResultsToD3Graph({
     sparqlResults: graphData,
     prefixes,
     margin,
@@ -352,24 +350,24 @@ export function loadGraph({
 
   function getNodeText(d) {
     // TODO: instead change font size
-    return d._rdfValue.length <= (maxTextLength * zoomOffset.z) / 1.4
+    return d._rdfValue?.length <= (maxTextLength * zoomOffset.z) / 1.4
       ? d._rdfValue
-      : `${d._rdfValue.slice(
+      : `${d._rdfValue?.slice?.(
           0,
           Math.floor((maxTextLength * zoomOffset.z) / 1.4 / 2)
-        )}...${d._rdfValue.slice(
+        )}...${d._rdfValue?.slice?.(
           -Math.ceil((maxTextLength * zoomOffset.z) / 1.4 / 2)
         )}`;
   }
 
   function getLinkTextBoxWidth(d) {
     d._boxWidth =
-      Math.max(d._rdfValue.length, minNodeRadius) * nodeRadiusFactor + padding;
+      Math.max(d._rdfValue?.length, minNodeRadius) * nodeRadiusFactor + padding;
     return d._boxWidth;
   }
 
   function getColour(d) {
-    return nodeColours[d._rdfType];
+    return !d._isCollapsed ? nodeColours[d._rdfType] : "rgb(200, 200, 200)";
   }
 
   function updateOnce() {
@@ -408,8 +406,8 @@ export function loadGraph({
     return function (d2, x1, y1, x2, y2) {
       if (!!d2.length) return;
       if (d2.data && d2.data !== d) {
-        d2.data._x2 = (d2.data.fx ?? d2.data.x) + d2.data.width;
-        d2.data._y2 = (d2.data.fy ?? d2.data.y) + d2.data.height;
+        d2.data._x2 = (d2.data.fx ?? d2.data.x) + d2.data._width;
+        d2.data._y2 = (d2.data.fy ?? d2.data.y) + d2.data._height;
         if (overlap(d2.data, d)) {
           if (Math.random() > 0.73) {
             d.y +=
@@ -434,12 +432,12 @@ export function loadGraph({
     const perSideMargin = margin / 2;
     const nax1 = a.x - perSideMargin,
       nay1 = a.y - perSideMargin,
-      nax2 = a.x2 + perSideMargin,
-      nay2 = a.y2 + perSideMargin,
+      nax2 = a._x2 + perSideMargin,
+      nay2 = a._y2 + perSideMargin,
       nbx1 = b.x - perSideMargin,
       nby1 = b.y - perSideMargin,
-      nbx2 = b.x2 + perSideMargin,
-      nby2 = b.y2 + perSideMargin;
+      nbx2 = b._x2 + perSideMargin,
+      nby2 = b._y2 + perSideMargin;
 
     // taken from https://developer.mozilla.org/en-US/docs/Games/Techniques/2D_collision_detection @see Axis-Aligned Bounding Box
     return nax1 < nbx2 && nax2 > nbx1 && nay1 < nby2 && nay2 > nby1;
@@ -449,12 +447,12 @@ export function loadGraph({
     for (let n of nodeData) {
       n.x = Math.max(
         -width,
-        Math.min((width - (n.width ?? 0)) * 2 * Math.max(1, zoomOffset.z), n.x)
+        Math.min((width - (n._width ?? 0)) * 2 * Math.max(1, zoomOffset.z), n.x)
       );
       n.y = Math.max(
         -height,
         Math.min(
-          (height - (n.height ?? 0)) * 2 * Math.max(1, zoomOffset.z),
+          (height - (n._height ?? 0)) * 2 * Math.max(1, zoomOffset.z),
           n.y
         )
       );
@@ -524,25 +522,35 @@ export function loadGraph({
   }
 
   function hideSmallerPartialGraphs(splitNode) {
-    const { partialGraphs, looseNodes } = getPartialGraphs(splitNode);
-    let biggestPartialGraphIndex = 0;
-    for (let gIndex = 1; gIndex < partialGraphs.length; gIndex++) {
-      if (
-        partialGraphs[gIndex].length >
-        partialGraphs[biggestPartialGraphIndex].length
-      )
-        biggestPartialGraphIndex = gIndex;
+    let { partialGraphs, looseNodes } = getPartialGraphs(splitNode);
+    let biggestPartialGraphs = [partialGraphs.splice(0, 1)];
+    let smallerPartialGraphs = [];
+    while (partialGraphs.length > 0) {
+      if (partialGraphs[0].length > biggestPartialGraphs[0].length) {
+        smallerPartialGraphs.push(...biggestPartialGraphs);
+        biggestPartialGraphs = [partialGraphs.splice(0, 1)];
+      } else if (partialGraphs[0].length === biggestPartialGraphs[0].length) {
+        biggestPartialGraphs.push(partialGraphs.splice(0, 1));
+      } else {
+        smallerPartialGraphs.push(partialGraphs.splice(0, 1));
+      }
     }
 
-    const [biggestPartialGraph] = partialGraphs.splice(
-      biggestPartialGraphIndex,
-      1
-    );
-    nodeData = [...biggestPartialGraph, ...looseNodes, splitNode];
+    if (smallerPartialGraphs.length === 0) {
+      smallerPartialGraphs = biggestPartialGraphs;
+      biggestPartialGraphs = [];
+    }
+
+    nodeData = [
+      ...(biggestPartialGraphs.flat() ?? []),
+      ...looseNodes,
+      splitNode,
+    ];
     const filterResults = filterLooseLinks(linkData, nodeData);
     linkData = filterResults[0];
+    console.log({biggestPartialGraphs, smallerPartialGraphs, nodeData, linkData});
     splitNode._hidden = {
-      nodes: partialGraphs,
+      nodes: smallerPartialGraphs.flat(),
       links: filterResults[1],
     };
   }
@@ -565,11 +573,11 @@ export function loadGraph({
   }
 
   function drawGraph() {
+    node.exit().remove();
+    link.exit().remove();
     while (svgElement.lastChild) {
       svgElement.removeChild(svgElement.lastChild);
     }
-    node.exit().remove();
-    link.exit().remove();
     linkG = svg.append("g");
     nodeG = svg.append("g");
     linkTextG = svg
@@ -579,8 +587,6 @@ export function loadGraph({
       .enter()
       .append("g");
 
-    // #NODES
-    //* The node elements and their cosmetic attachments
     node = nodeG
       .attr("stroke", "#fff")
       .attr("stroke-width", "0.1px")
@@ -666,5 +672,8 @@ export function loadGraph({
       .style("stroke", "#F00");
 
     resetSimulationParameters();
+
+    simulation.nodes(nodeData);
+    simulation.force("link").links(linkData);
   }
 }

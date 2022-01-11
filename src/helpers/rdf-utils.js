@@ -92,10 +92,22 @@ export function stringifyTtlPrefixes(prefixes) {
   return prefixString;
 }
 
+export function getD3GraphLeafs(links) {
+  return links.filter((link) =>
+    links.every(
+      (otherLink) =>
+        otherLink === link ||
+        (otherLink.source !== link.source &&
+          otherLink.target !== link.source) ||
+        (otherLink.source !== link.target && otherLink.target !== link.target)
+    )
+  );
+}
+
 export function getNumberOfLinks(node, links) {
   return {
     ...node,
-    linkCount: links.reduce(
+    _linkCount: links.reduce(
       (prev, cur) =>
         cur.source === node.id || cur.target === node.id ? prev + 1 : prev,
       0
@@ -208,11 +220,57 @@ export function convertSparqlResultsToD3Graph({
   }
 
   // only leave unique nodes and save uncapped nodes and links
-  const allNodes = (nodes = [...new Map(nodes.map((o) => [o.id, o])).values()]);
-  const allLinks = filterDuplicateLinks(links);
+  nodes = [...new Map(nodes.map((o) => [o.id, o])).values()]
+    .map((node) => getNumberOfLinks(node, links))
+    .sort((d1, d2) =>
+      d1._linkCount === 0 || d2._linkCount === 0
+        ? d1._linkCount - d2._linkCount
+        : d2._linkCount - d1._linkCount
+    );
 
-  // limit number of nodes
-  nodes = nodes.slice(0, nodeCapacity);
+  links = filterDuplicateLinks(links);
+  const [originallyIsolatedNodes, rest] = filterIsolatedNodes(links, nodes);
+  nodes = rest;
+
+  // remove node with least number of links greater than 0
+  // until capacity requirements are met
+  while (nodes.length > nodeCapacity) {
+    const linksCopy = [...links];
+    const hiddenNode = nodes.pop();
+    const connectedNode = nodes.find((d) =>
+      linksCopy.some(
+        (link) =>
+          (link.source === d.id && link.target === hiddenNode.id) ||
+          (link.source === hiddenNode.id && link.target === d.id)
+      )
+    );
+
+    if (connectedNode == null) {
+      nodes.splice(0, 0, hiddenNode);
+      continue;
+    }
+
+    const hiddenLinks = links.filter(
+      (link) => link.source === hiddenNode.id || link.target === hiddenNode.id
+    );
+    links = links.filter(
+      (link) => link.source !== hiddenNode.id && link.target !== hiddenNode.id
+    );
+
+    const newlyIsolatedNodes = filterIsolatedNodes(links, nodes);
+
+    nodes = [...newlyIsolatedNodes[1], connectedNode];
+
+    connectedNode._hidden = {
+      nodes: [
+        hiddenNode,
+        ...newlyIsolatedNodes[0].filter(isolatedNode => isolatedNode.id !== connectedNode.id),
+        ...(connectedNode?._hidden?.nodes ?? []),
+      ],
+      links: [...hiddenLinks, ...(connectedNode?._hidden?.links ?? [])],
+    };
+    connectedNode._isCollapsed = true;
+  }
 
   // filter out links that are now no longer connected
   [links] = filterLooseLinks(links, nodes);
@@ -220,14 +278,15 @@ export function convertSparqlResultsToD3Graph({
   // filter out duplicate links
   links = filterDuplicateLinks(links);
 
+  // add originally isolated nodes back in
+  nodes = [...nodes, ...originallyIsolatedNodes];
+
   // add counter to nodes for all links
   nodes = nodes.map((node) => getNumberOfLinks(node, links));
 
   return {
     nodes,
     links,
-    allNodes,
-    allLinks,
   };
 }
 
@@ -260,4 +319,15 @@ export function filterLooseLinks(links, nodes) {
   }
 
   return [filtered, rest];
+}
+
+function filterIsolatedNodes(links, nodes) {
+  return [
+    nodes.filter((node) =>
+      links.every((link) => link.source !== node.id && link.target !== node.id)
+    ),
+    nodes.filter((node) =>
+      links.some((link) => link.source === node.id || link.target === node.id)
+    ),
+  ];
 }
