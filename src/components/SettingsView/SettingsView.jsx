@@ -77,7 +77,9 @@ PREFIX oa: <http://www.w3.org/ns/openannotation/core/>`}
         placeholder={`e.g.
 URI: http://example.com/Example
 URI with previously defined prefixes: ex:Example
-Atomic value: ExampleValue`}
+Atomic value: ExampleValue
+Only subject: +sExampleValue
+Escaped and only considers subjects and objects: +o+s\\+pExampleValue`}
         type="textarea"
         onChange={(cE) => {
           settings.blacklist.setter(cE.target.value);
@@ -89,7 +91,9 @@ Atomic value: ExampleValue`}
         placeholder={`e.g.
 URI: http://example.com/Example
 URI with previously defined prefixes: ex:Example
-Atomic value: ExampleValue`}
+Atomic value: ExampleValue
+Only subject: +sExampleValue
+Escaped and only considers subjects and objects: +o+s\\+pExampleValue`}
         type="textarea"
         onChange={(cE) => {
           settings.whitelist.setter(cE.target.value);
