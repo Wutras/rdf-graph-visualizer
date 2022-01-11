@@ -1,7 +1,10 @@
 import React, { useEffect, useState } from "react";
 import "./Main.css";
 import { RdfGraph, SettingsView } from "..";
-import { parseTtlPrefixes } from "../../helpers/rdf-utils";
+import {
+  createSPOFilterListFromText,
+  parseTtlPrefixes,
+} from "../../helpers/rdf-utils";
 
 export default function Main({ view, settings, graphData, setSimulationData }) {
   const [isLoading, setIsLoading] = useState(true);
@@ -17,12 +20,8 @@ export default function Main({ view, settings, graphData, setSimulationData }) {
         <RdfGraph
           graphData={graphData}
           prefixes={parseTtlPrefixes(settings.prefixes.value)}
-          whitelist={settings.whitelist.value
-            .split("\n")
-            .filter((el) => !/^\s*$/.test(el))}
-          blacklist={settings.blacklist.value
-            .split("\n")
-            .filter((el) => !/^\s*$/.test(el))}
+          whitelist={createSPOFilterListFromText(settings.whitelist.value)}
+          blacklist={createSPOFilterListFromText(settings.blacklist.value)}
           nodeCapacity={settings.nodeCapacity.value}
           showingNodeText={settings.showingNodeText.value}
           showingLinkText={settings.showingLinkText.value}

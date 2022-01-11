@@ -118,6 +118,7 @@ export function convertSparqlResultsToD3Graph({
   let links = [];
 
   let uniqueId = 0;
+  console.log({ blacklist, whitelist });
   for (const { subject, predicate, object } of sparqlResults) {
     const prefixedSubjectValue = applyPrefixesToStatement(
         subject.value,
@@ -128,36 +129,68 @@ export function convertSparqlResultsToD3Graph({
         prefixes
       ),
       prefixedObjectValue = applyPrefixesToStatement(object.value, prefixes);
-    const isWhitelisted = whitelist.some((whitelistedString) => {
-      const whitelistedPattern = RegExp(whitelistedString, "mi");
-      return (
-        whitelistedPattern.test(subject.value) ||
-        whitelistedPattern.test(prefixedSubjectValue) ||
-        whitelistedPattern.test(predicate.value) ||
-        whitelistedPattern.test(prefixedPredicateValue) ||
-        whitelistedPattern.test(object.value) ||
-        whitelistedPattern.test(prefixedObjectValue)
-      );
-    });
+    const isWhitelisted =
+      whitelist.subject.some((whitelistedString) => {
+        const whitelistedPattern = RegExp(whitelistedString, "mi");
+        return (
+          whitelistedPattern.test(subject.value) ||
+          whitelistedPattern.test(prefixedSubjectValue)
+        );
+      }) ||
+      whitelist.predicate.some((whitelistedString) => {
+        const whitelistedPattern = RegExp(whitelistedString, "mi");
+        return (
+          whitelistedPattern.test(predicate.value) ||
+          whitelistedPattern.test(prefixedPredicateValue)
+        );
+      }) ||
+      whitelist.object.some((whitelistedString) => {
+        const whitelistedPattern = RegExp(whitelistedString, "mi");
+        return (
+          whitelistedPattern.test(object.value) ||
+          whitelistedPattern.test(prefixedObjectValue)
+        );
+      });
 
-    const isBlacklisted = !blacklist.some((blacklistedString) => {
-      const blackListedPattern = RegExp(blacklistedString, "mi");
-      return (
-        blackListedPattern.test(subject.value) ||
-        blackListedPattern.test(prefixedSubjectValue) ||
-        blackListedPattern.test(predicate.value) ||
-        blackListedPattern.test(prefixedPredicateValue) ||
-        blackListedPattern.test(object.value) ||
-        blackListedPattern.test(prefixedObjectValue)
-      );
-    });
+    const isBlacklisted =
+      !blacklist.subject.some((blacklistedString) => {
+        const blackListedPattern = RegExp(blacklistedString, "mi");
+        return (
+          blackListedPattern.test(subject.value) ||
+          blackListedPattern.test(prefixedSubjectValue)
+        );
+      }) &&
+      !blacklist.predicate.some((blacklistedString) => {
+        const blackListedPattern = RegExp(blacklistedString, "mi");
+        return (
+          blackListedPattern.test(predicate.value) ||
+          blackListedPattern.test(prefixedPredicateValue)
+        );
+      }) &&
+      !blacklist.object.some((blacklistedString) => {
+        const blackListedPattern = RegExp(blacklistedString, "mi");
+        return (
+          blackListedPattern.test(object.value) ||
+          blackListedPattern.test(prefixedObjectValue)
+        );
+      });
     if (
-      (isWhitelisted && blacklist.length === 0) ||
-      (isBlacklisted && whitelist.length === 0) ||
+      (isWhitelisted &&
+        blacklist.subject.length === 0 &&
+        blacklist.predicate.length === 0 &&
+        blacklist.object.length === 0) ||
+      (isBlacklisted &&
+        whitelist.subject.length === 0 &&
+        whitelist.predicate.length === 0 &&
+        whitelist.object.length === 0) ||
       (isWhitelisted &&
         isBlacklisted &&
-        whitelist.length > 0 &&
-        blacklist.length > 0) ||
+        (whitelist.subject.length > 0 ||
+          whitelist.predicate.length > 0 ||
+          whitelist.object.length > 0) &&
+        (blacklist.subject.length > 0 ||
+          blacklist.predicate.length > 0 ||
+          blacklist.object.length > 0)) ||
       (whitelist.length === 0 && blacklist.length === 0)
     ) {
       nodes.push(
@@ -237,5 +270,43 @@ export function convertSparqlResultsToD3Graph({
   return {
     nodes,
     links,
+  };
+}
+
+export function createSPOFilterListFromText(listText) {
+  const list = listText.split("\n").filter((el) => !/^\s*$/.test(el));
+  let spoList = {
+    subject: [],
+    predicate: [],
+    object: [],
+  };
+  
+  for (const term of list) {
+    let hasNoSpecifiers = true;
+    // term has shape (+s)(+p)(+o) term with order of +s+p+o being flexible
+    if (/^((?<!\\)\+[po]){0,2}(?<!\\)\+s/.test(term)) {
+      spoList.subject.push(term.match(/^((?<!\\)\+[spo]){1,3}(.*)$/)[2]);
+      hasNoSpecifiers = false;
+    }
+    if (/^((?<!\\)\+[so]){0,2}(?<!\\)\+p/.test(term)) {
+      spoList.predicate.push(term.match(/^((?<!\\)\+[spo]){1,3}(.*)$/)[2]);
+      hasNoSpecifiers = false;
+    }
+    if (/^((?<!\\)\+[sp]){0,2}(?<!\\)\+o/.test(term)) {
+      spoList.object.push(term.match(/^((?<!\\)\+[spo]){1,3}(.*)$/)[2]);
+      hasNoSpecifiers = false;
+    }
+
+    if (hasNoSpecifiers) {
+      spoList.subject.push(term);
+      spoList.predicate.push(term);
+      spoList.object.push(term);
+    }
+  }
+
+  return {
+    subject: spoList.subject.filter((term) => !/^\s*$/.test(term)),
+    predicate: spoList.predicate.filter((term) => !/^\s*$/.test(term)),
+    object: spoList.object.filter((term) => !/^\s*$/.test(term)),
   };
 }
