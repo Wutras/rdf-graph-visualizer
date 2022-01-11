@@ -37,7 +37,7 @@ export function loadGraph({
     z: 1,
   };
 
-  const { nodes, links } = convertSparqlResultsToD3Graph({
+  let { nodes, links } = convertSparqlResultsToD3Graph({
     sparqlResults: graphData,
     prefixes,
     margin,
