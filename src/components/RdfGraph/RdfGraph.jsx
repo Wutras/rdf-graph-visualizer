@@ -13,6 +13,7 @@ export default function RdfGraph({
   showingLinkText,
   whitelist,
   blacklist,
+  usingAgnosticCollapsing,
 }) {
   const [infoMessage, setInfoMessage] = useState("");
   const [infoBoxVisible, setInfoBoxVisible] = useState(false);
@@ -45,6 +46,7 @@ export default function RdfGraph({
           showingLinkText,
           blacklist,
           whitelist,
+          usingAgnosticCollapsing,
         });
         setIsLoading(false);
       });

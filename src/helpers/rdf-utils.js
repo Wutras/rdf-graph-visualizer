@@ -130,7 +130,6 @@ export function convertSparqlResultsToD3Graph({
   let links = [];
 
   let uniqueId = 0;
-  console.log({ blacklist, whitelist });
   for (const { subject, predicate, object } of sparqlResults) {
     const prefixedSubjectValue = applyPrefixesToStatement(
         subject.value,
@@ -151,7 +150,6 @@ export function convertSparqlResultsToD3Graph({
       }) ||
       whitelist.predicate.some((whitelistedString) => {
         const whitelistedPattern = RegExp(whitelistedString, "mi");
-        console.log({whitelistedPattern, prefixedPredicateValue, predValue: predicate.value});
         return (
           whitelistedPattern.test(predicate.value) ||
           whitelistedPattern.test(prefixedPredicateValue)

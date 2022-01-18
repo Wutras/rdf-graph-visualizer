@@ -25,6 +25,7 @@ export default function Main({ view, settings, graphData, setSimulationData }) {
           nodeCapacity={settings.nodeCapacity.value}
           showingNodeText={settings.showingNodeText.value}
           showingLinkText={settings.showingLinkText.value}
+          usingAgnosticCollapsing={settings.usingAgnosticCollapsing.value}
           setSimulationData={setSimulationData}
           setIsLoading={setIsLoading}
         />

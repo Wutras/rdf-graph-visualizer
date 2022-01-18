@@ -14,6 +14,7 @@ export function loadGraph({
   showingLinkText,
   blacklist,
   whitelist,
+  usingAgnosticCollapsing,
 }) {
   const svgElement = document.querySelector(".hsa-rdf-graph");
 
@@ -222,14 +223,8 @@ export function loadGraph({
             minNodeRadius
           ))
       )
-      .attr(
-        "stroke-width",
-        (d) =>
-          d._isCollapsed ? "3px" : "0px"
-      )
-      .attr("stroke",
-        (d) =>
-          d._isCollapsed ? "black": "none");
+      .attr("stroke-width", (d) => (d._isCollapsed ? "3px" : "0px"))
+      .attr("stroke", (d) => (d._isCollapsed ? "black" : "none"));
 
     if (showingLinkText) {
       linkTextRect
@@ -571,12 +566,36 @@ export function loadGraph({
     };
   }
 
+  function hideChildren(d) {
+    if (d?._hidden?.nodes != null && d?._hidden.links != null) {
+      nodeData = nodeData.filter((n) => !d._hidden.nodes.includes(n));
+      linkData = linkData.filter((l) => !d._hidden.links.includes(l));
+      d._hidden.links.forEach((l) => {
+        nodeData = nodeData.filter((n) => console.log(n, (l.source !== n && l.target !== n) || n === d) || (l.source !== n && l.target !== n) || n === d);
+      });
+      [linkData] = filterLooseLinks(linkData, nodeData);
+      for (const child of d._hidden.nodes) {
+        hideChildren(child);
+        if (child?._hidden?.nodes?.length > 0) child._isCollapsed = true;
+      }
+    } else {
+      d._hidden = {
+        nodes: [],
+        links: [],
+      };
+    }
+  }
+
   function toggleNode(d) {
     if (d._isCollapsed) {
       expandNode(d);
       d._isCollapsed = false;
     } else {
-      hideSmallerPartialGraphs(d);
+      if (usingAgnosticCollapsing) {
+        hideSmallerPartialGraphs(d);
+      } else {
+        hideChildren(d);
+      }
       d._isCollapsed = true;
     }
     drawGraph();
@@ -585,7 +604,7 @@ export function loadGraph({
   function expandNode(d) {
     nodeData = [...nodeData, ...d._hidden.nodes.flat()];
     linkData = [...d._hidden.links, ...linkData];
-    d._hidden = {};
+    if (usingAgnosticCollapsing) d._hidden = {};
   }
 
   function drawGraph() {

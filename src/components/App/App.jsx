@@ -24,7 +24,7 @@ function App() {
   );
   const [graphData, setGraphData] = useState();
   const [nodeCapacity, setNodeCapacity] = useState(
-    JSON.parse(localStorage.getItem("nodeCapacity")) ?? 10
+    JSON.parse(sessionStorage.getItem("nodeCapacity")) ?? 10
   );
   const [usingDefaultPrefixes, setUsingDefaultPrefixes] = useState(
     JSON.parse(localStorage.getItem("usingDefaultPrefixes")) ?? true
@@ -42,14 +42,15 @@ function App() {
   const [whitelist, setWhitelist] = useState(
     localStorage.getItem("whitelist") ?? ""
   );
+  const [usingAgnosticCollapsing, setUsingAgnosticCollapsing] = useState(
+    JSON.parse(localStorage.getItem("usingAgnosticCollapsing")) ?? false
+  );
 
   const loadGraphData = useCallback(async () => {
     if (
       localStorage.getItem("sparqlEndpoint") !== sparqlEndpoint ||
       localStorage.getItem("username") !== username ||
       localStorage.getItem("graphURI") !== graphURI ||
-      localStorage.getItem("blacklist") !== blacklist ||
-      localStorage.getItem("whitelist") !== whitelist ||
       sessionStorage.getItem("password") !== password ||
       graphData == null
     ) {
@@ -73,8 +74,6 @@ function App() {
     username,
     graphURI,
     graphData,
-    blacklist,
-    whitelist,
   ]);
 
   async function saveSettings() {
@@ -90,6 +89,8 @@ function App() {
     );
     localStorage.setItem("blacklist", blacklist);
     localStorage.setItem("whitelist", whitelist);
+    localStorage.setItem("usingAgnosticCollapsing", JSON.stringify(usingAgnosticCollapsing));
+    console.log(usingAgnosticCollapsing);
 
     sessionStorage.setItem("password", password);
     sessionStorage.setItem("nodeCapacity", JSON.stringify(nodeCapacity));
@@ -188,6 +189,10 @@ function App() {
           blacklist: {
             value: blacklist,
             setter: setBlacklist,
+          },
+          usingAgnosticCollapsing: {
+            value: usingAgnosticCollapsing,
+            setter: setUsingAgnosticCollapsing,
           },
         }}
         view={view}
