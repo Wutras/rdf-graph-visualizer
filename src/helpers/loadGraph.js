@@ -76,9 +76,12 @@ export function loadGraph({
     .append("g")
     .on("click", (d) => {
       if (isDragging) return;
-      showInfo({ type: d._rdfType, value: d._rdfValue, label: d._rdfsLabel });
-      toggleNode(d);
       d._isHighlightedFixed = !d._isHighlightedFixed;
+    })
+    .on("dblclick", toggleNode)
+    .on("contextmenu", (d) => {
+      d3.event.preventDefault();
+      showInfo({ type: d._rdfType, value: d._rdfValue, label: d._rdfsLabel });
     })
     .on("mouseover", (d) => {
       d._isHighlighted = true;
@@ -181,7 +184,7 @@ export function loadGraph({
 
   const zoom = d3.zoom().on("zoom", zoomed);
 
-  svg.call(zoom);
+  svg.call(zoom).on("dblclick.zoom", null);
 
   //* Makes the simulation available to the React components for easier communication
   setSimulationData({
@@ -218,7 +221,15 @@ export function loadGraph({
             nodeRadiusFactor * zoomOffset.z + padding,
             minNodeRadius
           ))
-      );
+      )
+      .attr(
+        "stroke-width",
+        (d) =>
+          d._isCollapsed ? "3px" : "0px"
+      )
+      .attr("stroke",
+        (d) =>
+          d._isCollapsed ? "black": "none");
 
     if (showingLinkText) {
       linkTextRect
@@ -367,7 +378,7 @@ export function loadGraph({
   }
 
   function getColour(d) {
-    return !d._isCollapsed ? nodeColours[d._rdfType] : "rgb(200, 200, 200)";
+    return nodeColours[d._rdfType];
   }
 
   function updateOnce() {
@@ -548,7 +559,12 @@ export function loadGraph({
     ];
     const filterResults = filterLooseLinks(linkData, nodeData);
     linkData = filterResults[0];
-    console.log({biggestPartialGraphs, smallerPartialGraphs, nodeData, linkData});
+    console.log({
+      biggestPartialGraphs,
+      smallerPartialGraphs,
+      nodeData,
+      linkData,
+    });
     splitNode._hidden = {
       nodes: smallerPartialGraphs.flat(),
       links: filterResults[1],
@@ -596,9 +612,11 @@ export function loadGraph({
       .append("g")
       .on("click", (d) => {
         if (isDragging) return;
-        showInfo({ type: d._rdfType, value: d._rdfValue, label: d._rdfsLabel });
-        toggleNode(d);
         d._isHighlightedFixed = !d._isHighlightedFixed;
+      })
+      .on("dblclick", toggleNode)
+      .on("contextmenu", (d) => {
+        showInfo({ type: d._rdfType, value: d._rdfValue, label: d._rdfsLabel });
       })
       .on("mouseover", (d) => {
         d._isHighlighted = true;

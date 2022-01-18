@@ -151,6 +151,7 @@ export function convertSparqlResultsToD3Graph({
       }) ||
       whitelist.predicate.some((whitelistedString) => {
         const whitelistedPattern = RegExp(whitelistedString, "mi");
+        console.log({whitelistedPattern, prefixedPredicateValue, predValue: predicate.value});
         return (
           whitelistedPattern.test(predicate.value) ||
           whitelistedPattern.test(prefixedPredicateValue)
