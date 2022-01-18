@@ -33,6 +33,7 @@ export default function SettingsView({ settings }) {
       <InputField
         prompt="Use default prefixes:"
         type="checkbox"
+        infoText={"Uses the top prefixes from prefix.cc"}
         onChange={(cE) => {
           settings.usingDefaultPrefixes.setter(cE.target.checked);
           const defaultPrefixes =
@@ -46,6 +47,7 @@ export default function SettingsView({ settings }) {
       />
       <InputField
         prompt="Show node text:"
+        infoText={"The node text is its value and it's shown inside the node box. Only subjects and objects are nodes."}
         type="checkbox"
         onChange={(cE) => {
           settings.showingNodeText.setter(cE.target.checked);
@@ -54,6 +56,7 @@ export default function SettingsView({ settings }) {
       />
       <InputField
         prompt="Show link text:"
+        infoText={"The link text is its value and it's shown in a box on top of the link. Only predicates are links."}
         type="checkbox"
         onChange={(cE) => {
           settings.showingLinkText.setter(cE.target.checked);
@@ -62,6 +65,7 @@ export default function SettingsView({ settings }) {
       />
       <InputField
         prompt="RDF Prefixes (In case of conflicts, the first prefix is used):"
+        infoText={"Note that these prefixes apply to the blacklist and whitelist on top of the nodes and links in the graph. If you use the default prefixes from prefix.cc, you should ensure that the prefixes mean what you expect. In case of multiple identical prefixes, only the first is used."}
         placeholder={`e.g.
 PREFIX ex: <http://example.com/>
 PREFIX oa: <http://www.w3.org/ns/openannotation/core/>`}
@@ -73,7 +77,8 @@ PREFIX oa: <http://www.w3.org/ns/openannotation/core/>`}
         value={settings.prefixes.value}
       />
       <InputField
-        prompt="Blacklist (If one node in a triple matches, it's removed):"
+        prompt="Blacklist:"
+        infoText={"If one element in a triple matches, it's removed. Entries are separated with linebreaks. All entries are interpreted as JavaScript regular expressions. You may restrict an entry to the subject (+s), predicate (+p) and/or object (+o). Example: +s+oex:Example to blacklist 'ex:Example' in subjects and predicates. Order does not matter and you can escape these specifiers using a backslash like so: +s\\+oex:Example to blacklist +oex:Example in subjects. Previously defined prefixes can be used, however you should verify they have the intended meaning, if you're using the default prefixes."}
         placeholder={`e.g.
 URI: http://example.com/Example
 URI with previously defined prefixes: ex:Example
@@ -87,7 +92,8 @@ Escaped and only considers subjects and objects: +o+s\\+pExampleValue`}
         value={settings.blacklist.value}
       />
       <InputField
-        prompt="Whitelist (If one node in a triple matches, it's included):"
+        infoText={"If no element in a triple matches, it's removed. Entries are separated with linebreaks. All entries are interpreted as JavaScript regular expressions. You may restrict an entry to the subject (+s), predicate (+p) and/or object (+o). Example: +s+oex:Example to whitelist 'ex:Example' in subjects and predicates. Order does not matter and you can escape these specifiers using a backslash like so: +s\\+oex:Example to whitelist +oex:Example in subjects. Previously defined prefixes can be used, however you should verify they have the intended meaning, if you're using the default prefixes."}
+        prompt="Whitelist:"
         placeholder={`e.g.
 URI: http://example.com/Example
 URI with previously defined prefixes: ex:Example
@@ -101,6 +107,7 @@ Escaped and only considers subjects and objects: +o+s\\+pExampleValue`}
         value={settings.whitelist.value}
       />
       <InputField
+        infoText={"This will collapse the graph from the node with the least to the node with the most connections, until the amount of nodes is smaller or equal than the node capacity. Therefore, the node capacity may not be the amount of nodes."}
         prompt="Node Capacity"
         placeholder="10"
         onChange={(cE) => settings.nodeCapacity.setter(cE.target.value)}

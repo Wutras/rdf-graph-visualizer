@@ -1,0 +1,11 @@
+.info-button {
+    flex-basis: auto;
+    align-self: center;
+}
+.info-button > .half-circle, .info-button .circular-button {
+    height: calc(var(--header-footer-height) / 1.5);
+    top: initial;
+    align-self: initial;
+    margin-right: initial;
+    padding: initial;
+}

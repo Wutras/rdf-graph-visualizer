@@ -1,4 +1,5 @@
 import React from "react";
+import { InfoButton } from "..";
 import "./InputField.css";
 
 export default function InputField({
@@ -9,10 +10,12 @@ export default function InputField({
   value = "",
   defaultValue,
   checked,
+  infoText,
 }) {
   return (
     <div className="input-field">
       <label className="prompt">{prompt}</label>
+      {infoText != null ? <InfoButton infoText={infoText}/> : null}
       {type === "textarea" ? (
         <textarea
           onChange={onChange}

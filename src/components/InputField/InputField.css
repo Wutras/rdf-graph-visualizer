@@ -8,13 +8,13 @@
 .input-field > .prompt {
     flex-basis: 10%;
     font-size: x-large;
-    flex-grow: 3.1;
+    flex-grow: 0.1;
     margin-left: 2rem;
     margin-right: 1rem;
 }
 
 .input-field > .text-input {
-    flex-basis: 80%;
+    flex-basis: 70%;
     flex-grow: 1.25;
     margin-right: 2rem;
     margin-left: 1rem;
