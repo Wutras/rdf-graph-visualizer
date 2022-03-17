@@ -1,6 +1,10 @@
-import { convertSparqlResultsToD3Graph, filterLooseLinks } from "./rdf-utils";
-import { nodeColours, edgeColours } from "../config.json";
-import { quadtree } from "d3-quadtree";
+import {
+  convertSparqlResultsToD3Graph,
+  filterLooseLinks,
+  getLinkedNodes,
+  hideNodeInNeighbour,
+} from "./rdf-utils";
+import { edgeColours } from "../config.json";
 
 const d3 = window.d3;
 
@@ -15,10 +19,12 @@ export function loadGraph({
   blacklist,
   whitelist,
   usingAgnosticCollapsing,
+  setView,
+  preferredSourceNode,
 }) {
   const svgElement = document.querySelector(".hsa-rdf-graph");
 
-  //! This causes bugs sometimes in the settings view
+  //! This fixes bugs sometimes happening in the settings view
   if (svgElement == null) return;
 
   // #SETTINGS
@@ -29,8 +35,8 @@ export function loadGraph({
     padding = 0,
     margin = 0,
     maxTextLength = 32, // 32 is perfect if nodeRadiusFactor is 5
-    nodeRadiusFactor = 9, // should not go below 11 as of right now
-    minNodeRadius = 20;
+    nodeRadiusFactor = 11, // should not go below 11 as of right now
+    minNodeRadius = 10;
 
   let zoomOffset = {
     x: 0,
@@ -38,7 +44,7 @@ export function loadGraph({
     z: 1,
   };
 
-  let { nodes, links } = convertSparqlResultsToD3Graph({
+  let { nodes, links, sourceNode, status } = convertSparqlResultsToD3Graph({
     sparqlResults: graphData,
     prefixes,
     margin,
@@ -48,12 +54,43 @@ export function loadGraph({
     padding,
     whitelist,
     blacklist,
+    preferredSourceNode,
   });
+
+  if (!status.ok) {
+    if (status.reason === "preferredSourceNodeNotFound") {
+      alert("The specified source node could not be found");
+      return setView("settings");
+    } else if (status.reason === "emptyGraph") {
+      alert("The current configuration results in an empty graph");
+      return setView("settings");
+    }
+  }
 
   let linkData = links,
     nodeData = nodes;
 
-  // TODO: Generate dummy graph of 5 nodes with all nodes being connected
+  // #FORCES
+  let linkForce = d3
+    .forceLink()
+    .id((d) => d.id)
+    .distance(300)
+    .strength(1);
+  // #SIMULATION
+  let simulation = d3
+    .forceSimulation()
+    .force("link", linkForce)
+    .force("center", d3.forceCenter(width / 2, height / 2))
+    .force("x", d3.forceX().strength(-0.01))
+    .force("y", d3.forceY().strength(-0.01))
+    .force(
+      "collide",
+      d3
+        .forceCollide()
+        .radius((d) => d._radius)
+        .iterations(30)
+    )
+    .force("bounds", boxingForce);
 
   // #CONTAINERS
   //* container groups ensuring correct rendering order and therefore correct layering
@@ -69,8 +106,10 @@ export function loadGraph({
   // #NODES
   //* The node elements and their cosmetic attachments
   let node = nodeG
+    .append("g")
     .attr("stroke", "#fff")
     .attr("stroke-width", "0.1px")
+    .attr("class", "node")
     .selectAll("g")
     .data(nodeData)
     .enter()
@@ -93,10 +132,26 @@ export function loadGraph({
       if (!isDragging) updateOnce();
     });
 
-  let rectangle = node.append("rect").attr("fill", getColour);
+  let icon = node
+    .append("image")
+    .attr("xlink:href", function (d) {
+      if (d._foafDepiction != null) return d._foafDepiction;
+
+      return d._rdfType === "literal"
+        ? "https://fonts.gstatic.com/s/i/materialicons/description/v12/24px.svg"
+        : "https://fonts.gstatic.com/s/i/materialicons/link/v21/24px.svg";
+    })
+    .attr("x", -25)
+    .attr("y", -25)
+    .attr("width", (d) => d._radius)
+    .attr("height", (d) => d._radius);
 
   let nodeText = showingNodeText
-    ? node.append("text").text(getNodeText)
+    ? node
+        .append("text")
+        .attr("y", (d) => -d._radius * 1.5)
+        .attr("x", (d) => -getNodeText(d).length * 3.5)
+        .text(getNodeText)
     : undefined;
 
   // #LINKS
@@ -112,29 +167,21 @@ export function loadGraph({
 
   let linkLine = link.append("line").attr("color", edgeColours.line);
 
-  let linkTextRect = showingLinkText
-    ? linkTextG
-        .append("rect")
-        .attr("x", (d) => d._width - getNodeText(d).length)
-        .attr("width", getLinkTextBoxWidth)
-        .attr(
-          "height",
-          (d) =>
-            Math.max(
-              nodeRadiusFactor * zoomOffset.z + margin + padding,
-              minNodeRadius
-            ) - margin
-        )
-        .attr("fill", edgeColours.textBox)
-    : undefined;
+  if (showingLinkText) {
+    linkTextG
+      .append("rect")
+      .attr("fill", edgeColours.textBox)
+      .attr("width", getLinkTextBoxWidth)
+      .attr("height", (d) => (d._rectHeight = 32));
 
-  let linkText = showingLinkText
-    ? linkTextG
-        .append("text")
-        .text(getNodeText)
-        .attr("y", minNodeRadius / 1.5)
-        .attr("x", (d) => d._width - getNodeText(d).length)
-    : undefined;
+    linkTextG
+      .append("text")
+      .text(getNodeText)
+      .attr("y", (d) => 0.5 * d._rectHeight)
+      .attr("x", (d) => 0.5 * d._rectWidth)
+      .attr("dominant-baseline", "middle")
+      .attr("text-anchor", "middle");
+  }
 
   //* The arrow heads indicating the direction of the edges
   svg
@@ -142,44 +189,16 @@ export function loadGraph({
     .append("marker")
     .attr("id", "arrowhead")
     .attr("viewBox", "-0 -5 10 10")
-    .attr("refX", 35)
+    .attr("refX", 30)
     .attr("refY", 0)
     .attr("orient", "auto")
-    .attr("markerWidth", 13)
-    .attr("markerHeight", 13)
+    .attr("markerWidth", 7)
+    .attr("markerHeight", 7)
     .attr("xoverflow", "visible")
     .append("svg:path")
     .attr("d", "M 0,-5 L 10 ,0 L 0,5")
     .attr("fill", edgeColours.arrowHead)
     .style("stroke", "#F00");
-
-  // #FORCES
-  const linkForce = d3
-    .forceLink()
-    .id((d) => d.id)
-    .strength(0);
-
-  const spacing = d3
-    .forceManyBody()
-    .distanceMin((d) => (d._width + margin) / 2)
-    .distanceMax((d) => (d._width + margin) * 1.5)
-    .strength(-100);
-  /* Commented out for now. Might be added back in later if deemed necessary.
-     If the distribution seems good enough without it, remove this entire comment block.
-    const attraction = d3
-    .forceManyBody()
-    .distanceMin((d) => (d._width + margin) * 2)
-    .strength(50); */
-  // #SIMULATION
-  const simulation = d3
-    .forceSimulation()
-    .alphaTarget(0.1)
-    .alphaMin(0.15)
-    .force("link", linkForce)
-    .force("center", d3.forceCenter(width / 2, height / 2))
-    .force("spacing", spacing)
-    //.force("attraction", attraction)
-    .force("bounds", boxingForce);
 
   let isDragging = false;
 
@@ -206,51 +225,29 @@ export function loadGraph({
   simulation.force("link").links(linkData);
 
   function ticked() {
-    rectangle
+    icon
       .attr(
         "width",
         (d) =>
-          (d._width = Math.max(
-            (getNodeText(d).length * zoomOffset.z + padding) * nodeRadiusFactor,
-            (minNodeRadius + padding) * nodeRadiusFactor
+          (d._radius = Math.max(
+            50 * zoomOffset.z + padding,
+            minNodeRadius + padding
           ))
       )
-      .attr(
-        "height",
-        (d) =>
-          (d._height = Math.max(
-            nodeRadiusFactor * zoomOffset.z + padding,
-            minNodeRadius
-          ))
-      )
-      .attr("stroke-width", (d) => (d._isCollapsed ? "3px" : "0px"))
-      .attr("stroke", (d) => (d._isCollapsed ? "black" : "none"));
+      .attr("height", (d) => d._radius)
+      .attr("class", (d) =>
+        d._isHighlighted || d._isHighlightedFixed ? "highlighted" : ""
+      );
 
     if (showingLinkText) {
-      linkTextRect
-        .attr(
-          "width",
-          (d) =>
-            (d._rectWidth = Math.max(
-              (getNodeText(d).length * zoomOffset.z + padding) *
-                nodeRadiusFactor,
-              (minNodeRadius + padding) * nodeRadiusFactor
-            ))
-        )
-        .attr(
-          "height",
-          (d) =>
-            (d._rectHeight =
-              Math.max(nodeRadiusFactor * zoomOffset.z, minNodeRadius) +
-              padding)
-        );
-
       linkTextG
         .attr(
           "transform",
           (d) =>
             `translate(${
-              ((d.target.x + d.source.x) * zoomOffset.z) / 2 + zoomOffset.x
+              ((d.target.x + d.source.x) * zoomOffset.z) / 2 +
+              zoomOffset.x -
+              d._rectWidth / 2
             },${((d.target.y + d.source.y) * zoomOffset.z) / 2 + zoomOffset.y})`
         )
         .attr("display", (d) =>
@@ -261,11 +258,6 @@ export function loadGraph({
             ? ""
             : "none"
         );
-
-      linkText
-        .text((d) => getNodeText(d))
-        .attr("x", (nodeRadiusFactor * padding) / 2)
-        .attr("y", (d) => d._rectHeight / 1.5 + padding / 10);
     }
 
     linkLine
@@ -277,22 +269,9 @@ export function loadGraph({
           ? "#F00"
           : "#000"
       )
-      .attr("marker-end", (d) =>
-        d.target._isHighlighted ||
-        d.source._isHighlighted ||
-        d.target._isHighlightedFixed ||
-        d.source._isHighlightedFixed
-          ? "url(#arrowhead)"
-          : ""
-      )
-      .attr(
-        "x1",
-        (d) => d.source.x * zoomOffset.z + zoomOffset.x + d.source._width / 2
-      )
-      .attr(
-        "x2",
-        (d) => d.target.x * zoomOffset.z + zoomOffset.x + d.target._width / 2
-      )
+      .attr("marker-end", "url(#arrowhead)")
+      .attr("x1", (d) => d.source.x * zoomOffset.z + zoomOffset.x)
+      .attr("x2", (d) => d.target.x * zoomOffset.z + zoomOffset.x)
       .attr("y1", (d) => d.source.y * zoomOffset.z + zoomOffset.y)
       .attr("y2", (d) => d.target.y * zoomOffset.z + zoomOffset.y);
 
@@ -304,22 +283,21 @@ export function loadGraph({
         })`
     );
 
-    const q = quadtree()
-      .x((d) => d.x)
-      .y((d) => d.y)
-      .extent([
-        [-1, -1],
-        [width + 1, height + 1],
-      ])
-      .addAll(nodeData);
-
-    nodeData.forEach((d) => q.visit(collideRect(d)));
+    node
+      .attr("cx", function (d) {
+        d.fx = d.x;
+        return d.x;
+      })
+      .attr("cy", function (d) {
+        d.fy = d.y;
+        return d.y;
+      });
 
     if (showingNodeText) {
       nodeText
         .text((d) => getNodeText(d))
-        .attr("x", (nodeRadiusFactor * padding) / 2)
-        .attr("y", (d) => d._height / 1.5 + (padding * zoomOffset.z) / 10);
+        .attr("x", (d) => -getNodeText(d).length * 3)
+        .attr("y", (d) => -d._radius);
     }
   }
 
@@ -356,24 +334,25 @@ export function loadGraph({
 
   function getNodeText(d) {
     // TODO: instead change font size
+    const labelText = d._rdfsLabel == null ? "" : ` (Label: ${d._rdfsLabel})`;
+    const linkCountText =
+      d._linkCount == null ? "" : ` (Link count: ${d._linkCount})`;
     return d._rdfValue?.length <= (maxTextLength * zoomOffset.z) / 1.4
-      ? d._rdfValue
+      ? `${d._rdfValue}${labelText}${linkCountText}`
       : `${d._rdfValue?.slice?.(
           0,
           Math.floor((maxTextLength * zoomOffset.z) / 1.4 / 2)
         )}...${d._rdfValue?.slice?.(
           -Math.ceil((maxTextLength * zoomOffset.z) / 1.4 / 2)
-        )}`;
+        )}${labelText}${linkCountText}`;
   }
 
   function getLinkTextBoxWidth(d) {
-    d._boxWidth =
-      Math.max(d._rdfValue?.length, minNodeRadius) * nodeRadiusFactor + padding;
-    return d._boxWidth;
-  }
+    d._rectWidth =
+      Math.max((d._rdfValue.length ?? 1) * nodeRadiusFactor, minNodeRadius) +
+      padding;
 
-  function getColour(d) {
-    return nodeColours[d._rdfType];
+    return d._rectWidth;
   }
 
   function updateOnce() {
@@ -400,55 +379,6 @@ export function loadGraph({
       .restart();
   }
 
-  function collideRect(d) {
-    d._x2 = (d.fx ?? d.x) + d._width;
-    d._y2 = (d.fy ?? d.y) + d._height;
-
-    const nx1 = (d.fx ?? d.x) - (padding + margin) / 2,
-      nx2 = d._x2 + (padding + margin) / 2,
-      ny1 = (d.fy ?? d.y) - (padding + margin) / 2,
-      ny2 = d._y2 + (padding + margin) / 2;
-
-    return function (d2, x1, y1, x2, y2) {
-      if (!!d2.length) return;
-      if (d2.data && d2.data !== d) {
-        d2.data._x2 = (d2.data.fx ?? d2.data.x) + d2.data._width;
-        d2.data._y2 = (d2.data.fy ?? d2.data.y) + d2.data._height;
-        if (overlap(d2.data, d)) {
-          if (Math.random() > 0.73) {
-            d.y +=
-              Math.min(height / 2 - d._height, height / 2 - d2.data._height) /
-              8;
-            d2.data.y -=
-              Math.min(height / 2 - d._height, height / 2 - d2.data._height) /
-              8;
-          } else {
-            d.x +=
-              Math.min(width / 2 - d._width, width / 2 - d2.data._width) / 4;
-            d2.data.x -=
-              Math.min(width / 2 - d._width, width / 2 - d2.data._width) / 4;
-          }
-        }
-      }
-      return x1 > nx2 || x2 < nx1 || y1 > ny2 || y2 < ny1;
-    };
-  }
-
-  function overlap(a, b) {
-    const perSideMargin = margin / 2;
-    const nax1 = a.x - perSideMargin,
-      nay1 = a.y - perSideMargin,
-      nax2 = a._x2 + perSideMargin,
-      nay2 = a._y2 + perSideMargin,
-      nbx1 = b.x - perSideMargin,
-      nby1 = b.y - perSideMargin,
-      nbx2 = b._x2 + perSideMargin,
-      nby2 = b._y2 + perSideMargin;
-
-    // taken from https://developer.mozilla.org/en-US/docs/Games/Techniques/2D_collision_detection @see Axis-Aligned Bounding Box
-    return nax1 < nbx2 && nax2 > nbx1 && nay1 < nby2 && nay2 > nby1;
-  }
-
   function boxingForce() {
     for (let n of nodeData) {
       n.x = Math.max(
@@ -465,26 +395,9 @@ export function loadGraph({
     }
   }
 
-  function getAllLinkedNodes(originalNode) {
-    if (originalNode && !!d3.select(originalNode)) {
-      return (
-        linkData
-          // filter link list, so that only the edges remain that connect the original node with another node
-          .filter(
-            (edge) =>
-              edge.source === originalNode || edge.target === originalNode
-          )
-          // create a new list which will directly be returned containing only the nodes the original node is connected to
-          .map((edge) =>
-            edge.source !== originalNode ? edge.source : edge.target
-          )
-      );
-    }
-  }
-
   function getPartialGraphs(splitNode) {
     let visited = [];
-    let neighbourNodes = getAllLinkedNodes(splitNode);
+    let neighbourNodes = getLinkedNodes(splitNode, linkData, nodeData);
     let partialGraphs = [];
 
     function traverse(d) {
@@ -495,7 +408,7 @@ export function loadGraph({
       if (visited.includes(d)) return;
       visited.push(d);
       if (d === splitNode) return;
-      const nextNodes = getAllLinkedNodes(d);
+      const nextNodes = getLinkedNodes(d, linkData, nodeData);
       // leafs need no handling of neighbours
       if (nextNodes.length === 1) {
         addToCurrentPartialGraph(d);
@@ -554,35 +467,28 @@ export function loadGraph({
     ];
     const filterResults = filterLooseLinks(linkData, nodeData);
     linkData = filterResults[0];
-    console.log({
-      biggestPartialGraphs,
-      smallerPartialGraphs,
-      nodeData,
-      linkData,
-    });
     splitNode._hidden = {
       nodes: smallerPartialGraphs.flat(),
       links: filterResults[1],
     };
   }
 
-  function hideChildren(d) {
-    if (d?._hidden?.nodes != null && d?._hidden.links != null) {
-      nodeData = nodeData.filter((n) => !d._hidden.nodes.includes(n));
-      linkData = linkData.filter((l) => !d._hidden.links.includes(l));
-      d._hidden.links.forEach((l) => {
-        nodeData = nodeData.filter((n) => console.log(n, (l.source !== n && l.target !== n) || n === d) || (l.source !== n && l.target !== n) || n === d);
-      });
-      [linkData] = filterLooseLinks(linkData, nodeData);
-      for (const child of d._hidden.nodes) {
-        hideChildren(child);
-        if (child?._hidden?.nodes?.length > 0) child._isCollapsed = true;
-      }
-    } else {
-      d._hidden = {
-        nodes: [],
-        links: [],
-      };
+  function hideDependentNodes(parentNode) {
+    const linkedNodes = getLinkedNodes(parentNode, linkData, nodeData).filter(
+      (linkedNode) =>
+        linkedNode._distanceFromRoot > parentNode._distanceFromRoot
+    );
+
+    for (const linkedNode of linkedNodes) {
+      const newGraph = hideNodeInNeighbour(
+        parentNode,
+        linkedNode,
+        linkData,
+        nodeData,
+        sourceNode
+      );
+      nodeData = newGraph.nodes;
+      linkData = newGraph.links;
     }
   }
 
@@ -594,7 +500,7 @@ export function loadGraph({
       if (usingAgnosticCollapsing) {
         hideSmallerPartialGraphs(d);
       } else {
-        hideChildren(d);
+        hideDependentNodes(d);
       }
       d._isCollapsed = true;
     }
@@ -602,9 +508,9 @@ export function loadGraph({
   }
 
   function expandNode(d) {
-    nodeData = [...nodeData, ...d._hidden.nodes.flat()];
-    linkData = [...d._hidden.links, ...linkData];
-    if (usingAgnosticCollapsing) d._hidden = {};
+    nodeData = [...nodeData, ...(d._hidden?.nodes?.flat() ?? [])];
+    linkData = [...linkData, ...(d._hidden?.links ?? [])];
+    d._hidden = {};
   }
 
   function drawGraph() {
@@ -623,8 +529,10 @@ export function loadGraph({
       .append("g");
 
     node = nodeG
+      .append("g")
       .attr("stroke", "#fff")
       .attr("stroke-width", "0.1px")
+      .attr("class", "node")
       .selectAll("g")
       .data(nodeData)
       .enter()
@@ -635,6 +543,7 @@ export function loadGraph({
       })
       .on("dblclick", toggleNode)
       .on("contextmenu", (d) => {
+        d3.event.preventDefault();
         showInfo({ type: d._rdfType, value: d._rdfValue, label: d._rdfsLabel });
       })
       .on("mouseover", (d) => {
@@ -648,10 +557,26 @@ export function loadGraph({
 
     drag_handler(node);
 
-    rectangle = node.append("rect").attr("fill", getColour);
+    icon = node
+      .append("image")
+      .attr("xlink:href", function (d) {
+        if (d._foafDepiction != null) return d._foafDepiction;
+
+        return d._rdfType === "literal"
+          ? "https://fonts.gstatic.com/s/i/materialicons/description/v12/24px.svg"
+          : "https://fonts.gstatic.com/s/i/materialicons/link/v21/24px.svg";
+      })
+      .attr("x", -25)
+      .attr("y", -25)
+      .attr("width", (d) => d._radius)
+      .attr("height", (d) => d._radius);
 
     nodeText = showingNodeText
-      ? node.append("text").text(getNodeText)
+      ? node
+          .append("text")
+          .attr("y", (d) => -d._radius * 1.5)
+          .attr("x", (d) => -getNodeText(d).length * 3.5)
+          .text(getNodeText)
       : undefined;
 
     // #LINKS
@@ -667,29 +592,21 @@ export function loadGraph({
 
     linkLine = link.append("line").attr("color", edgeColours.line);
 
-    linkTextRect = showingLinkText
-      ? linkTextG
-          .append("rect")
-          .attr("x", (d) => d._width - getNodeText(d).length)
-          .attr("width", getLinkTextBoxWidth)
-          .attr(
-            "height",
-            (d) =>
-              Math.max(
-                nodeRadiusFactor * zoomOffset.z + margin + padding,
-                minNodeRadius
-              ) - margin
-          )
-          .attr("fill", edgeColours.textBox)
-      : undefined;
+    if (showingLinkText) {
+      linkTextG
+        .append("rect")
+        .attr("fill", edgeColours.textBox)
+        .attr("width", getLinkTextBoxWidth)
+        .attr("height", (d) => (d._rectHeight = 32));
 
-    linkText = showingLinkText
-      ? linkTextG
-          .append("text")
-          .text(getNodeText)
-          .attr("y", minNodeRadius / 1.5)
-          .attr("x", (d) => d._width - getNodeText(d).length)
-      : undefined;
+      linkTextG
+        .append("text")
+        .text(getNodeText)
+        .attr("y", (d) => 0.5 * d._rectHeight)
+        .attr("x", (d) => 0.5 * d._rectWidth)
+        .attr("dominant-baseline", "middle")
+        .attr("text-anchor", "middle");
+    }
 
     //* The arrow heads indicating the direction of the edges
     svg
@@ -697,18 +614,16 @@ export function loadGraph({
       .append("marker")
       .attr("id", "arrowhead")
       .attr("viewBox", "-0 -5 10 10")
-      .attr("refX", 35)
+      .attr("refX", 30)
       .attr("refY", 0)
       .attr("orient", "auto")
-      .attr("markerWidth", 13)
-      .attr("markerHeight", 13)
+      .attr("markerWidth", 7)
+      .attr("markerHeight", 7)
       .attr("xoverflow", "visible")
       .append("svg:path")
       .attr("d", "M 0,-5 L 10 ,0 L 0,5")
       .attr("fill", edgeColours.arrowHead)
       .style("stroke", "#F00");
-
-    resetSimulationParameters();
 
     simulation.nodes(nodeData);
     simulation.force("link").links(linkData);

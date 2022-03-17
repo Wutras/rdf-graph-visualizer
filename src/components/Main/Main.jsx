@@ -6,7 +6,7 @@ import {
   parseTtlPrefixes,
 } from "../../helpers/rdf-utils";
 
-export default function Main({ view, settings, graphData, setSimulationData }) {
+export default function Main({ view, settings, graphData, setSimulationData, setView }) {
   const [isLoading, setIsLoading] = useState(true);
   useEffect(() => {
     if (view === "settings") setIsLoading(false);
@@ -28,6 +28,8 @@ export default function Main({ view, settings, graphData, setSimulationData }) {
           usingAgnosticCollapsing={settings.usingAgnosticCollapsing.value}
           setSimulationData={setSimulationData}
           setIsLoading={setIsLoading}
+          setView={setView}
+          preferredSourceNode={settings.preferredSourceNode.value}
         />
       )}
     </div>

@@ -14,6 +14,8 @@ export default function RdfGraph({
   whitelist,
   blacklist,
   usingAgnosticCollapsing,
+  setView,
+  preferredSourceNode,
 }) {
   const [infoMessage, setInfoMessage] = useState("");
   const [infoBoxVisible, setInfoBoxVisible] = useState(false);
@@ -47,11 +49,13 @@ export default function RdfGraph({
           blacklist,
           whitelist,
           usingAgnosticCollapsing,
+          setView,
+          preferredSourceNode,
         });
         setIsLoading(false);
       });
     });
-  }, [blacklist, whitelist, graphData, nodeCapacity, prefixes, showingLinkText, showingNodeText]);
+  }, [blacklist, whitelist, graphData, nodeCapacity, prefixes, showingLinkText, showingNodeText, preferredSourceNode]);
 
   useEffect(() => {
     window.addEventListener("resize", () => {

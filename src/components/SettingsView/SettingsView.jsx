@@ -31,6 +31,12 @@ export default function SettingsView({ settings }) {
         value={settings.graphURI.value}
       />
       <InputField
+        prompt="Preferred Source Node:"
+        placeholder="The focused node's value/URI into which other nodes will be collapsed"
+        onChange={(cE) => settings.preferredSourceNode.setter(cE.target.value)}
+        value={settings.preferredSourceNode.value}
+      />
+      <InputField
         prompt="Use default prefixes:"
         type="checkbox"
         infoText={"Uses the top prefixes from prefix.cc"}
@@ -125,18 +131,17 @@ Escaped and only considers subjects and objects: +o+s\\+pExampleValue`}
         onChange={(cE) => settings.nodeCapacity.setter(cE.target.value)}
         value={settings.nodeCapacity.value}
       />
-      <InputField
+      {/* <InputField
         infoText={
           "Enabling this will cause collapsing not to maintain the initial structure. Collapsing a node will therefore collapse all connected partial graphs that are smaller than or equal to the biggest connected partial graph."
         }
         type="checkbox"
         prompt="Agnostic collapsing:"
-        defaultValue={true}
         onChange={(cE) =>
           settings.usingAgnosticCollapsing.setter(cE.target.checked)
         }
         checked={settings.usingAgnosticCollapsing.value}
-      />
+      /> */}
     </div>
   );
 }

@@ -45,6 +45,7 @@ function App() {
   const [usingAgnosticCollapsing, setUsingAgnosticCollapsing] = useState(
     JSON.parse(localStorage.getItem("usingAgnosticCollapsing")) ?? false
   );
+  const [preferredSourceNode, setpreferredSourceNode] = useState(undefined);
 
   const loadGraphData = useCallback(async () => {
     if (
@@ -68,13 +69,7 @@ function App() {
         return;
       }
     }
-  }, [
-    sparqlEndpoint,
-    password,
-    username,
-    graphURI,
-    graphData,
-  ]);
+  }, [sparqlEndpoint, password, username, graphURI, graphData]);
 
   async function saveSettings() {
     loadGraphData();
@@ -89,8 +84,10 @@ function App() {
     );
     localStorage.setItem("blacklist", blacklist);
     localStorage.setItem("whitelist", whitelist);
-    localStorage.setItem("usingAgnosticCollapsing", JSON.stringify(usingAgnosticCollapsing));
-    console.log(usingAgnosticCollapsing);
+    localStorage.setItem(
+      "usingAgnosticCollapsing",
+      JSON.stringify(usingAgnosticCollapsing)
+    );
 
     sessionStorage.setItem("password", password);
     sessionStorage.setItem("nodeCapacity", JSON.stringify(nodeCapacity));
@@ -118,6 +115,7 @@ function App() {
     /\/[^/]+$/.test(sparqlEndpoint) &&
     username.length > 0 &&
     password.length > 0 &&
+    nodeCapacity > 0 &&
     !Number.isNaN(nodeCapacity) &&
     validateRDFPrefixes(prefixes);
 
@@ -194,10 +192,15 @@ function App() {
             value: usingAgnosticCollapsing,
             setter: setUsingAgnosticCollapsing,
           },
+          preferredSourceNode: {
+            value: preferredSourceNode,
+            setter: setpreferredSourceNode,
+          }
         }}
         view={view}
         graphData={graphData}
         setSimulationData={setSimulationData}
+        setView={setView}
       />
       <Footer
         setView={setView}
