@@ -2,6 +2,48 @@
 
 Next generation (generalization of https://gitlab.hs-anhalt.de/both_a/qanaryannotationvisualizationui) of an RDF graph visualizer JavaScript component
 
+## Running the application
+
+### Docker
+
+### Prerequisites
+
+1. If not yet installed, get the [Docker Engine](https://docs.docker.com/engine/install/).
+
+### Building and running
+
+To build and run the application using Docker, follow these steps:
+
+1. Open a terminal.
+2. Build the image using the following command:
+
+    ```shell
+    docker build . --tag rdf-graph-visualizer:latest
+    ```
+
+3. Execute the following command to run the image as a container. Replace `RDF_GRAPH_VISUALIZER_PORT` with the port on which the application should be available.
+
+    ```shell
+    docker run -p RDF_GRAPH_VISUALIZER_PORT:3000 -d --restart on-failure:1 --name rdf-graph-visualizer rdf-graph-visualizer:latest
+    ```
+
+### With Node and NPM
+
+To build and run the application using Node and NPM, follow these steps:
+
+1. Open a terminal.
+2. Install dependencies:
+
+    ```shell
+    npm ci
+    ```
+
+3. Start the application:
+
+    ```shell
+    npm start
+    ```
+
 ## Configuration
 
 The entire configuration is stored long-term in the browser's `localStorage`, except for:

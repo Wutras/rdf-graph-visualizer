@@ -1,10 +1,12 @@
 import {
   convertSparqlResultsToD3Graph,
-  convertUnstructuredGraphToLayered,
+} from "./rdf-utils";
+import {
   filterLooseLinks,
   getLinkedNodes,
   hideNodeInNeighbour,
-} from "./rdf-utils";
+  convertUnstructuredGraphToLayered,
+} from "./graph-utils";
 import CONFIG from "../config.json";
 
 const d3 = window.d3;

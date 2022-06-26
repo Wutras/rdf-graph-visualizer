@@ -5,7 +5,7 @@ WORKDIR /app
 COPY . .
 RUN npm ci
 
-ENV HTTPS=true
+ENV HTTPS=false
 ENV SSL_CRT_FILE=nginx/certs/webengineering.ins.hs-anhalt.de.cert
 ENV SSL_KEY_FILE=nginx/certs/webengineering.ins.hs-anhalt.de.key
 

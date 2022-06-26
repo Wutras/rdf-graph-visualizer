@@ -49,9 +49,9 @@ export function fetchAllTriples(endpointUrl, graphId, username, password) {
     },
     object: { value: "kowabunga", type: "literal" },
   })
-  return new Promise((res) => {
+  /* return new Promise((res) => {
     res(results);
-  });
+  }); */
   return stardog
     .query({
       query: "SELECT * WHERE { ?subject ?predicate ?object }",
