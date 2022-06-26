@@ -174,22 +174,58 @@ export function hideNodeInNeighbour(
   return { nodes: connectedNodes, links: connectedLinks };
 }
 
+function isSparqlResultOnList(result, list) {
+  const {
+    subject,
+    predicate,
+    object,
+    prefixedSubjectValue,
+    prefixedPredicateValue,
+    prefixedObjectValue,
+  } = result;
+
+  // List is split into subject, predicate and object
+  // Same goes for the result
+  // the list goes for both prefixed and raw strings
+  // check if any of the triple's values are on the list
+  return (
+    list.subject.some((listedString) => {
+      const listedPattern = RegExp(listedString, "mi");
+      return (
+        listedPattern.test(subject.value) ||
+        listedPattern.test(prefixedSubjectValue)
+      );
+    }) ||
+    list.predicate.some((listedString) => {
+      const listedPattern = RegExp(listedString, "mi");
+      return (
+        listedPattern.test(predicate.value) ||
+        listedPattern.test(prefixedPredicateValue)
+      );
+    }) ||
+    list.object.some((listedString) => {
+      const listedPattern = RegExp(listedString, "mi");
+      return (
+        listedPattern.test(object.value) ||
+        listedPattern.test(prefixedObjectValue)
+      );
+    })
+  );
+}
+
 export function convertSparqlResultsToD3Graph({
   sparqlResults,
+  whitelist,
+  blacklist,
   prefixes,
   maxTextLength,
   margin,
   padding,
   nodeRadiusFactor,
-  whitelist,
-  blacklist,
-  nodeCapacity,
-  preferredSourceNode,
 }) {
   let nodes = [];
   let links = [];
-  if (sparqlResults.length === 0)
-    return { nodes, links, nodeWithMostLinks: null };
+  if (sparqlResults.length === 0) return { nodes, links };
 
   let uniqueId = 0;
   for (const { subject, predicate, object } of sparqlResults) {
@@ -202,69 +238,39 @@ export function convertSparqlResultsToD3Graph({
         prefixes
       ),
       prefixedObjectValue = applyPrefixesToStatement(object.value, prefixes);
-    const isWhitelisted =
-      whitelist.subject.some((whitelistedString) => {
-        const whitelistedPattern = RegExp(whitelistedString, "mi");
-        return (
-          whitelistedPattern.test(subject.value) ||
-          whitelistedPattern.test(prefixedSubjectValue)
-        );
-      }) ||
-      whitelist.predicate.some((whitelistedString) => {
-        const whitelistedPattern = RegExp(whitelistedString, "mi");
-        return (
-          whitelistedPattern.test(predicate.value) ||
-          whitelistedPattern.test(prefixedPredicateValue)
-        );
-      }) ||
-      whitelist.object.some((whitelistedString) => {
-        const whitelistedPattern = RegExp(whitelistedString, "mi");
-        return (
-          whitelistedPattern.test(object.value) ||
-          whitelistedPattern.test(prefixedObjectValue)
-        );
-      });
 
-    const isBlacklisted =
-      !blacklist.subject.some((blacklistedString) => {
-        const blackListedPattern = RegExp(blacklistedString, "mi");
-        return (
-          blackListedPattern.test(subject.value) ||
-          blackListedPattern.test(prefixedSubjectValue)
-        );
-      }) &&
-      !blacklist.predicate.some((blacklistedString) => {
-        const blackListedPattern = RegExp(blacklistedString, "mi");
-        return (
-          blackListedPattern.test(predicate.value) ||
-          blackListedPattern.test(prefixedPredicateValue)
-        );
-      }) &&
-      !blacklist.object.some((blacklistedString) => {
-        const blackListedPattern = RegExp(blacklistedString, "mi");
-        return (
-          blackListedPattern.test(object.value) ||
-          blackListedPattern.test(prefixedObjectValue)
-        );
-      });
-    if (
-      (isWhitelisted &&
+    const result = {
+      subject,
+      predicate,
+      object,
+      prefixedSubjectValue,
+      prefixedPredicateValue,
+      prefixedObjectValue,
+    };
+
+    const isWhitelisted = isSparqlResultOnList(result, whitelist),
+      isBlacklisted = isSparqlResultOnList(result, blacklist),
+      isBlacklistEmpty =
         blacklist.subject.length === 0 &&
         blacklist.predicate.length === 0 &&
-        blacklist.object.length === 0) ||
-      (isBlacklisted &&
+        blacklist.object.length === 0,
+      isWhitelistEmpty =
         whitelist.subject.length === 0 &&
         whitelist.predicate.length === 0 &&
-        whitelist.object.length === 0) ||
+        whitelist.object.length === 0;
+
+    if (
+      // Scenario 1: Whitelist exists, blacklist doesn't. Allow if result is whitelisted.
+      (isWhitelisted && isBlacklistEmpty) ||
+      // Scenario 2: Blacklist exists, whitelist doesn't. Allow if result isn't blacklisted.
+      (!isBlacklisted && isWhitelistEmpty) ||
+      // Scenario 3: Blacklist and whitelist both exist. Allow if result is whitelisted and not blacklisted.
       (isWhitelisted &&
-        isBlacklisted &&
-        (whitelist.subject.length > 0 ||
-          whitelist.predicate.length > 0 ||
-          whitelist.object.length > 0) &&
-        (blacklist.subject.length > 0 ||
-          blacklist.predicate.length > 0 ||
-          blacklist.object.length > 0)) ||
-      (whitelist.length === 0 && blacklist.length === 0)
+        !isBlacklisted &&
+        !isWhitelistEmpty &&
+        !isBlacklistEmpty) ||
+      // Scenario 4: Neither blacklist nor whitelist exist. Always allow result.
+      (isWhitelistEmpty && isBlacklistEmpty)
     ) {
       nodes.push(
         {
@@ -317,6 +323,37 @@ export function convertSparqlResultsToD3Graph({
     }
   }
 
+  let uniqueNodes = new Map();
+  for (const node of nodes) {
+    Object.keys(node).forEach((key) => node[key] == null && delete node[key]);
+    uniqueNodes.set(
+      node.id,
+      Object.assign(uniqueNodes.get(node.id) ?? {}, node)
+    );
+  }
+  // only leave unique nodes and save uncapped nodes and links
+  nodes = [...uniqueNodes.values()].map((node) =>
+    getNumberOfLinks(node, links)
+  );
+
+  return { nodes, links };
+}
+
+export function determineSourceNode({ nodes, preferredSourceNode }) {
+  if (preferredSourceNode)
+    return nodes.find((node) => node._rdfValue === preferredSourceNode);
+
+  nodes = nodes.sort((d1, d2) => d2._linkCount - d1._linkCount);
+  return nodes[0];
+}
+
+export function convertUnstructuredGraphToLayered({
+  d3Graph,
+  nodeCapacity,
+  preferredSourceNode,
+}) {
+  let { nodes, links } = d3Graph;
+
   if (nodes.length === 0)
     return {
       nodes: [],
@@ -328,26 +365,7 @@ export function convertSparqlResultsToD3Graph({
       },
     };
 
-  let uniqueNodes = new Map();
-  for (const node of nodes) {
-    Object.keys(node).forEach((key) => node[key] == null && delete node[key]);
-    uniqueNodes.set(
-      node.id,
-      Object.assign(uniqueNodes.get(node.id) ?? {}, node)
-    );
-  }
-  // only leave unique nodes and save uncapped nodes and links
-  nodes = [...uniqueNodes.values()]
-    .map((node) => getNumberOfLinks(node, links))
-    .sort((d1, d2) => d2._linkCount - d1._linkCount);
-
-  let sourceNode;
-  if (!preferredSourceNode) {
-    sourceNode = nodes[0];
-  } else {
-    sourceNode = nodes.find((node) => node._rdfValue === preferredSourceNode);
-    console.log(nodes);
-  }
+  const sourceNode = determineSourceNode({ nodes, preferredSourceNode });
 
   if (sourceNode == null)
     return {

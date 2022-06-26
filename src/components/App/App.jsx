@@ -3,7 +3,7 @@ import { Footer, Header, Main } from "..";
 import { validateRDFPrefixes } from "../../helpers/rdf-utils";
 import { fetchAllTriples } from "../../services/sparqlEndpoint.service";
 import "./App.css";
-import { defaultPrefixURL } from "../../config.json";
+import CONFIG from "../../config.json";
 
 function App() {
   const [view, setView] = useState("main");
@@ -125,7 +125,7 @@ function App() {
     loadGraphData();
 
     const fetchDefaultPrefixes = async () => {
-      const response = await fetch(defaultPrefixURL);
+      const response = await fetch(CONFIG.defaultPrefixURL);
 
       if (!!response?.ok && typeof response?.text === "function") {
         const defaultPrefixes = await response.text();

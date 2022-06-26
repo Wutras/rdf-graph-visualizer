@@ -93,9 +93,9 @@ Is this mandatory? No.
 
 Explanation: This can be used to filter out triples you don't want to look at.
 
-`Blacklist:` If even a single element of a triple matches, the entire triple will be filtered out from the filtered graph.
+`Blacklist:` If even a single element of a triple matches, the entire triple will be filtered out from the rendered graph.
 
-`Whitelist:` If even a single element of a triple matches, the entire triple will be remain in the rendered graph.
+`Whitelist:` If even a single element of a triple matches, the entire triple will remain in the rendered graph.
 > **The blacklist takes precedence over the whitelist.**
 
 Each line is interpreted as an individual regular expression in a list. To only apply a filter to subjects, predicates or objects, you can add +s, +p and +o as prefixes respectively.

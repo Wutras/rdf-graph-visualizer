@@ -1,10 +1,11 @@
 import {
   convertSparqlResultsToD3Graph,
+  convertUnstructuredGraphToLayered,
   filterLooseLinks,
   getLinkedNodes,
   hideNodeInNeighbour,
 } from "./rdf-utils";
-import { edgeColours } from "../config.json";
+import CONFIG from "../config.json";
 
 const d3 = window.d3;
 
@@ -44,16 +45,19 @@ export function loadGraph({
     z: 1,
   };
 
-  let { nodes, links, sourceNode, status } = convertSparqlResultsToD3Graph({
-    sparqlResults: graphData,
-    prefixes,
+  const d3Graph = convertSparqlResultsToD3Graph({
+    blacklist,
     margin,
     maxTextLength,
-    nodeCapacity,
     nodeRadiusFactor,
     padding,
+    prefixes,
+    sparqlResults: graphData,
     whitelist,
-    blacklist,
+  });
+  let { nodes, links, sourceNode, status } = convertUnstructuredGraphToLayered({
+    d3Graph,
+    nodeCapacity,
     preferredSourceNode,
   });
 
@@ -165,12 +169,12 @@ export function loadGraph({
     .enter()
     .append("g");
 
-  let linkLine = link.append("line").attr("color", edgeColours.line);
+  let linkLine = link.append("line").attr("color", CONFIG.edgeColours.line);
 
   if (showingLinkText) {
     linkTextG
       .append("rect")
-      .attr("fill", edgeColours.textBox)
+      .attr("fill", CONFIG.edgeColours.textBox)
       .attr("width", getLinkTextBoxWidth)
       .attr("height", (d) => (d._rectHeight = 32));
 
@@ -197,7 +201,7 @@ export function loadGraph({
     .attr("xoverflow", "visible")
     .append("svg:path")
     .attr("d", "M 0,-5 L 10 ,0 L 0,5")
-    .attr("fill", edgeColours.arrowHead)
+    .attr("fill", CONFIG.edgeColours.arrowHead)
     .style("stroke", "#F00");
 
   let isDragging = false;
@@ -590,12 +594,12 @@ export function loadGraph({
       .enter()
       .append("g");
 
-    linkLine = link.append("line").attr("color", edgeColours.line);
+    linkLine = link.append("line").attr("color", CONFIG.edgeColours.line);
 
     if (showingLinkText) {
       linkTextG
         .append("rect")
-        .attr("fill", edgeColours.textBox)
+        .attr("fill", CONFIG.edgeColours.textBox)
         .attr("width", getLinkTextBoxWidth)
         .attr("height", (d) => (d._rectHeight = 32));
 
@@ -622,7 +626,7 @@ export function loadGraph({
       .attr("xoverflow", "visible")
       .append("svg:path")
       .attr("d", "M 0,-5 L 10 ,0 L 0,5")
-      .attr("fill", edgeColours.arrowHead)
+      .attr("fill", CONFIG.edgeColours.arrowHead)
       .style("stroke", "#F00");
 
     simulation.nodes(nodeData);

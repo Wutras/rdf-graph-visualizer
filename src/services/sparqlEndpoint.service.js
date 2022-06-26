@@ -12,7 +12,7 @@ export function fetchAllTriples(endpointUrl, graphId, username, password) {
     },
   });
 
-  /* const results = new Array(5).fill(0).map((_, n) => ({
+  const results = new Array(5).fill(0).map((_, n) => ({
     subject: { value: "subject ", type: "uri" },
     predicate: { value: "predicate", type: "uri" },
     object: { value: "object".repeat(n), type: "literal" },
@@ -51,7 +51,7 @@ export function fetchAllTriples(endpointUrl, graphId, username, password) {
   })
   return new Promise((res) => {
     res(results);
-  }); */
+  });
   return stardog
     .query({
       query: "SELECT * WHERE { ?subject ?predicate ?object }",
