@@ -1,6 +1,4 @@
-import {
-  convertSparqlResultsToD3Graph,
-} from "./rdf-utils";
+import { convertSparqlResultsToD3Graph } from "./rdf-utils";
 import {
   filterLooseLinks,
   getLinkedNodes,
@@ -149,8 +147,8 @@ export function loadGraph({
     })
     .attr("x", -25)
     .attr("y", -25)
-    .attr("width", (d) => d._radius)
-    .attr("height", (d) => d._radius);
+    .attr("width", (d) => zoomOffset.z * d._radius)
+    .attr("height", (d) => zoomOffset.z * d._radius);
 
   let nodeText = showingNodeText
     ? node
@@ -241,6 +239,8 @@ export function loadGraph({
           ))
       )
       .attr("height", (d) => d._radius)
+      .attr("x", (d) => -d._radius / 2)
+      .attr("y", (d) => -d._radius / 2)
       .attr("class", (d) =>
         d._isHighlighted || d._isHighlightedFixed ? "highlighted" : ""
       );
@@ -303,7 +303,7 @@ export function loadGraph({
       nodeText
         .text((d) => getNodeText(d))
         .attr("x", (d) => -getNodeText(d).length * 3)
-        .attr("y", (d) => -d._radius);
+        .attr("y", (d) => -d._radius / 2);
     }
   }
 
@@ -331,7 +331,6 @@ export function loadGraph({
     zoomOffset.x = d3.event.transform.x;
     zoomOffset.y = d3.event.transform.y;
     zoomOffset.z = Math.max(d3.event.transform.k, 0.01);
-
     updateOnce();
   }
 

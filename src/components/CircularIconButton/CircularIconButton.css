@@ -27,7 +27,7 @@
     border-radius: 50%;
     height: 75%;
     aspect-ratio: 1 / 1;
-    background-color: white;
+    background: linear-gradient(180deg, transparent 65%, white 35%) no-repeat;;
     display: flex;
     justify-content: center;
     align-items: center;
