@@ -2,7 +2,7 @@
   "services": [
     {
       "mode": "dockerfile",
-      "port": "40193:9000",
+      "port": "40193:3000",
       "image": "qanary/rdf-graph-visualizer",
       "tag": "latest"
     }
