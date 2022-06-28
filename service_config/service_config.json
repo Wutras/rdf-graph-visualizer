@@ -1,0 +1,13 @@
+{
+  "services": [
+    {
+      "mode": "dockerfile",
+      "port": "10005:9000",
+      "image": "qanary/rdf-graph-visualizer",
+      "tag": "latest"
+    }
+  ],
+  "ids": {
+    "0": "qanary-rdf-graph-visualizer"
+  }
+}

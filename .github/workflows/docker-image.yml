@@ -1,0 +1,40 @@
+name: Docker Image CI
+
+env:
+ DOCKER_IMAGE_NAME: qanary/rdf-graph-visualizer
+
+on:
+  push:
+    branches: [ master, automated-deployment-test ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Get current version from package.json
+      run: >
+        echo "X_APP_VERSION=$(cat < package.json | grep -Po '(?<=\"version\": \")([^\"]*)')" >> $GITHUB_ENV
+    - name: Build the Docker image
+      run: docker build . --file Dockerfile --tag "$DOCKER_IMAGE_NAME:latest"
+    - name: Tag image with specific version
+      run: >
+        docker tag "$DOCKER_IMAGE_NAME:latest" "$DOCKER_IMAGE_NAME:$X_APP_VERSION"
+    - name: Tag docker image with latest version
+      run: docker tag "$DOCKER_IMAGE_NAME:latest" "$DOCKER_IMAGE_NAME:latest"
+    - name: Docker Login
+      uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.DOCKER_USER }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+    - name: Push docker image with latest version
+      run: docker push "$DOCKER_IMAGE_NAME:latest"
+    - name: Push docker image with specific version
+      run: >
+        docker push "$DOCKER_IMAGE_NAME:$X_APP_VERSION"
+    - name: Init update
+      env:
+        API_KEY: ${{ secrets.API_KEY }}
+        UPDATER_HOST: ${{ secrets.UPDATER_HOST }}
+      run: cd service_config && python init_services.py update
