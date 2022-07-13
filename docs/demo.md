@@ -47,7 +47,7 @@ You may want to visualize your graph nicely, filtering out any uninteresting nod
 
 To illustrate how that can be accomplished using this tool, I will explain the steps required to visualize all "Question" triples related to qanary
 
-1. Enter your SPARQL endpoint ([http://demos.swe.htwk-leipzig.de/](http://demos.swe.htwk-leipzig.de/)), database (qanary), credentials (omitted in this image) and graph URI (urn:graph:f95bb21a-1b43-4de6-9260-5424e4a80ec6) into the settings.
+1. Enter your SPARQL endpoint ([http://demos.swe.htwk-leipzig.de/](http://demos.swe.htwk-leipzig.de/)), database (qanary), credentials (username: demo password: rdfDemo) and graph URI (urn:graph:f95bb21a-1b43-4de6-9260-5424e4a80ec6) into the settings.
 
     ![SPARQL endpoint, database and graph URI filled out in the settings menu](application.png)
 
