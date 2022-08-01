@@ -513,8 +513,56 @@ export function loadGraph({
   }
 
   function expandNode(d) {
+    if (Array.isArray(d._hidden?.nodes)) {
+      const numberOfNodesInRow = Math.floor(Math.sqrt(d._hidden.nodes.length));
+      const approximatedNodeRadius =
+        Math.max(50 * zoomOffset.z + padding, minNodeRadius + padding) * 4;
+      // diameter of circle containing all hidden nodes
+      // diameter is the diagonal of the rectangle constructed
+      // by the width (radius * number of nodes in a row)
+      // and the height ((number of nodes divided // number of nodes in a row) * radius)
+      // which can be calculated using the pythagorean theorem
+      // diameter = sqrt(width^2 + height^2)
+      const diameter = Math.sqrt(
+        (approximatedNodeRadius * numberOfNodesInRow) ** 2 +
+          (Math.floor(d._hidden.nodes.length / numberOfNodesInRow) *
+            approximatedNodeRadius) **
+            2
+      );
+
+      const farthestNodes = nodeData.reduce(
+        (farthest, next) => {
+          farthest.left = next.x < farthest.left.x ? next : farthest.left;
+          farthest.right = next.x > farthest.right.x ? next : farthest.right;
+          return farthest;
+        },
+        {
+          left: { x: Number.MAX_SAFE_INTEGER },
+          right: { x: Number.MIN_SAFE_INTEGER },
+        }
+      );
+
+      const closerNode =
+        Math.abs(d.x - farthestNodes.left.x) >
+        Math.abs(d.x - farthestNodes.right.x)
+          ? farthestNodes.right
+          : farthestNodes.left;
+      const direction = closerNode === farthestNodes.right ? 1 : -1;
+
+      const farthestPointOfCircle = closerNode.x + diameter / 2 * direction;
+      d._hidden.nodes.forEach((node, i) => {
+        const y = Math.floor(i / numberOfNodesInRow);
+        const x = i % numberOfNodesInRow;
+        node.fx = node.x =
+          farthestPointOfCircle + x * approximatedNodeRadius * direction;
+        node.fy = node.y =
+          d.y + y * approximatedNodeRadius - approximatedNodeRadius / (x + 1);
+      });
+    }
+
     nodeData = [...nodeData, ...(d._hidden?.nodes?.flat() ?? [])];
     linkData = [...linkData, ...(d._hidden?.links ?? [])];
+
     d._hidden = {};
   }
 

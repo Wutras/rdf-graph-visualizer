@@ -2,6 +2,8 @@
 
 Next generation (generalization of https://gitlab.hs-anhalt.de/both_a/qanaryannotationvisualizationui) of an RDF graph visualizer JavaScript component
 
+Read the [demos section](docs/demo.md) to learn about use cases and the application's features.
+
 ## Running the application
 
 ### Docker
