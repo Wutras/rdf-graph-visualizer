@@ -55,6 +55,7 @@ export function loadGraph({
     sparqlResults: graphData,
     whitelist,
   });
+
   let { nodes, links, sourceNode, status } = convertUnstructuredGraphToLayered({
     d3Graph,
     nodeCapacity,
@@ -549,7 +550,7 @@ export function loadGraph({
           : farthestNodes.left;
       const direction = closerNode === farthestNodes.right ? 1 : -1;
 
-      const farthestPointOfCircle = closerNode.x + diameter / 2 * direction;
+      const farthestPointOfCircle = closerNode.x + (diameter / 2) * direction;
       d._hidden.nodes.forEach((node, i) => {
         const y = Math.floor(i / numberOfNodesInRow);
         const x = i % numberOfNodesInRow;
