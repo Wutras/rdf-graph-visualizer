@@ -77,7 +77,16 @@ export function loadGraph({
       showInfo({ info: "The specified source node could not be found" });
       return setView("settings");
     } else if (status.reason === "emptyGraph") {
-      showInfo({ info: "The current configuration results in an empty graph" });
+      showInfo({
+        info: (
+          <>
+            <div>Warning! The current configuration results in an empty graph.</div>
+            <div>Number of fetched triples: {graphData.length}</div>
+            <div>Number of nodes: {d3Graph.nodes.length}</div>
+            <div>Number of links: {d3Graph.links.length}</div>
+          </>
+        ),
+      });
       return setView("settings");
     }
   }
