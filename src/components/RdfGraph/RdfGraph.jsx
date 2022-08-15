@@ -1,5 +1,4 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { InfoBox } from "..";
 import { loadGraph } from "../../helpers/loadGraph";
 import "./RdfGraph.css";
 
@@ -16,15 +15,8 @@ export default function RdfGraph({
   usingAgnosticCollapsing,
   setView,
   preferredSourceNode,
+  showInfo,
 }) {
-  const [infoMessage, setInfoMessage] = useState("");
-  const [infoBoxVisible, setInfoBoxVisible] = useState(false);
-
-  function showInfo(info) {
-    setInfoMessage(info);
-    setInfoBoxVisible(true);
-  }
-
   const redrawGraph = useCallback(() => {
     const svg = document.querySelector(`.hsa-rdf-graph`);
 
@@ -55,7 +47,16 @@ export default function RdfGraph({
         setIsLoading(false);
       });
     });
-  }, [blacklist, whitelist, graphData, nodeCapacity, prefixes, showingLinkText, showingNodeText, preferredSourceNode]);
+  }, [
+    blacklist,
+    whitelist,
+    graphData,
+    nodeCapacity,
+    prefixes,
+    showingLinkText,
+    showingNodeText,
+    preferredSourceNode,
+  ]);
 
   useEffect(() => {
     window.addEventListener("resize", () => {
@@ -72,14 +73,6 @@ export default function RdfGraph({
   return (
     <>
       <svg className={"hsa-rdf-graph"} />
-      <InfoBox
-        type={infoMessage?.type}
-        value={infoMessage?.value}
-        label={infoMessage?.label}
-        prefixes={prefixes}
-        visible={infoBoxVisible}
-        setVisible={setInfoBoxVisible}
-      />
     </>
   );
 }

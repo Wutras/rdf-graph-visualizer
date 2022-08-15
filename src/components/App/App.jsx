@@ -46,6 +46,13 @@ function App() {
     JSON.parse(localStorage.getItem("usingAgnosticCollapsing")) ?? false
   );
   const [preferredSourceNode, setpreferredSourceNode] = useState(undefined);
+  const [infoMessage, setInfoMessage] = useState("");
+  const [infoBoxVisible, setInfoBoxVisible] = useState(false);
+
+  function showInfo(info) {
+    setInfoMessage(info);
+    setInfoBoxVisible(true);
+  }
 
   const loadGraphData = useCallback(async () => {
     if (
@@ -61,7 +68,62 @@ function App() {
           graphURI,
           username,
           password
-        );
+        ).catch((error) => {
+          console.debug(error);
+          if (error.statusCode === 401 || error.statusCode === 403) {
+            showInfo({
+              info: (
+                <>
+                  <div>
+                    Access was denied for the provided credentials. The status
+                    code is {error.statusCode}.
+                  </div>
+                  <br />
+                  <div>
+                    Here are some suggestions for resolving this issue:
+                    <ul>
+                      <li>Verify the provided credentials are correct</li>
+                      <li>Verify the address is correct: {sparqlEndpoint}</li>
+                      <li>
+                        Verify the database is correct:{" "}
+                        {sparqlEndpoint.match(/\/([^/.]*)$/)?.[1] ?? "N. A."}
+                      </li>
+                      <li>
+                        Verify you have permissions to access the database
+                      </li>
+                    </ul>
+                  </div>
+                </>
+              ),
+            });
+            setView("settings");
+          } else if (error.statusCode === 415 || error.statusCode === 404) {
+            showInfo({
+              info: (
+                <>
+                  <div>
+                    The request could not be completed because the endpoint
+                    could not be found or is not supported. If you believe the
+                    endpoint should be supported, verify that the endpoint is
+                    correct. The status code is {error.statusCode}.
+                  </div>
+                  <br />
+                  <div>
+                    Here are some suggestions for resolving this issue:
+                    <ul>
+                      <li>Verify the address is correct: {sparqlEndpoint}</li>
+                      <li>
+                        Verify the database is correct:{" "}
+                        {sparqlEndpoint.match(/\/([^/.]*)$/)?.[1] ?? "N. A."}
+                      </li>
+                    </ul>
+                  </div>
+                </>
+              ),
+            });
+            setView("settings");
+          }
+        });
         setGraphData(tripleStore);
       } catch (errorMessage) {
         console.error(errorMessage);
@@ -113,8 +175,6 @@ function App() {
 
   const validSettingsExist =
     /\/[^/]+$/.test(sparqlEndpoint) &&
-    username.length > 0 &&
-    password.length > 0 &&
     nodeCapacity > 0 &&
     !Number.isNaN(nodeCapacity) &&
     validateRDFPrefixes(prefixes);
@@ -195,12 +255,16 @@ function App() {
           preferredSourceNode: {
             value: preferredSourceNode,
             setter: setpreferredSourceNode,
-          }
+          },
         }}
         view={view}
         graphData={graphData}
         setSimulationData={setSimulationData}
         setView={setView}
+        showInfo={showInfo}
+        infoMessage={infoMessage}
+        infoBoxVisible={infoBoxVisible}
+        setInfoBoxVisible={setInfoBoxVisible}
       />
       <Footer
         setView={setView}

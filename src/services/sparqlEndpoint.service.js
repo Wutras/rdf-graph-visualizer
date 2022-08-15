@@ -6,10 +6,14 @@ export function fetchAllTriples(endpointUrl, graphId, username, password) {
   const stardog = new Stardog({
     endpoint,
     database,
-    auth: {
-      user: username,
-      pass: password,
-    },
+    ...(username
+      ? {
+          auth: {
+            user: username,
+            pass: password,
+          },
+        }
+      : {}),
   });
 
   return stardog

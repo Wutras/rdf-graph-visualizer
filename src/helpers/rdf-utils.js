@@ -4,21 +4,23 @@ Helper/internal functions
 
 import { getNumberOfLinks } from "./graph-utils";
 
-function isValidTtlPrefix(prefix) {
+export function isValidTtlPrefix(prefix) {
   if (prefix.length === 0) return true;
   return /^(PREFIX\s+\w*:\s*<[^>]*>|@prefix\s+\w*:\s*<[^>]*>\s*\.)$/i.test(
     prefix.trim()
   );
 }
 
-function parseTtlPrefix(prefix) {
-  if (prefix.length === 0) return;
+export function parseTtlPrefix(prefix) {
+  if (prefix.length === 0) return null;
 
   const matches = prefix
     .trim()
     .match(
       /^(PREFIX\s+(\w*:)\s*<([^>]*)>|@prefix\s+(\w*:)\s*<([^>]*)>\s*\.)$/i
     );
+
+  if (!matches || matches?.length < 4) return null;
 
   return matches[2] && matches[3]
     ? {
@@ -73,16 +75,14 @@ export function validateRDFPrefixes(prefixes) {
   if (prefixes.length === 0) return true;
 
   const prefixArr = prefixes.split("\n");
-  return prefixArr.every((prefix) => isValidTtlPrefix(prefix));
+  return prefixArr.every(isValidTtlPrefix);
 }
 
 export function parseTtlPrefixes(prefixes) {
   if (prefixes.length === 0) return [];
 
   const prefixArr = prefixes.split("\n");
-  return prefixArr
-    .map((prefix) => parseTtlPrefix(prefix))
-    .filter((prefix) => !!prefix);
+  return prefixArr.map(parseTtlPrefix).filter(Boolean);
 }
 
 export function stringifyTtlPrefixes(prefixes) {

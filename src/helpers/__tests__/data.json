@@ -1,0 +1,649 @@
+{
+  "links": [
+    {
+      "source": "https://dbpedia.org/page/Donald_Trump",
+      "target": "http://schema.org/Person",
+      "id": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+      "_rdfValue": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+      "_rdfType": "uri"
+    },
+    {
+      "source": "https://dbpedia.org/page/Donald_Trump",
+      "target": "Donald Trump1",
+      "id": "http://www.w3.org/2000/01/rdf-schema#label",
+      "_rdfValue": "http://www.w3.org/2000/01/rdf-schema#label",
+      "_rdfType": "uri"
+    },
+    {
+      "source": "https://dbpedia.org/page/Donald_Trump",
+      "target": "Donald Trump2",
+      "id": "http://www.w3.org/2000/01/rdf-schema#label",
+      "_rdfValue": "http://www.w3.org/2000/01/rdf-schema#label",
+      "_rdfType": "uri"
+    },
+    {
+      "source": "https://dbpedia.org/page/Donald_Trump",
+      "target": "Дональд Трамп3",
+      "id": "http://www.w3.org/2000/01/rdf-schema#label",
+      "_rdfValue": "http://www.w3.org/2000/01/rdf-schema#label",
+      "_rdfType": "uri"
+    },
+    {
+      "source": "https://dbpedia.org/page/Donald_Trump",
+      "target": "https://dbpedia.org/page/Eric_Trump",
+      "id": "http://schema.org/children",
+      "_rdfValue": "http://schema.org/children",
+      "_rdfType": "uri"
+    },
+    {
+      "source": "https://dbpedia.org/page/Donald_Trump",
+      "target": "https://dbpedia.org/page/Donald_Trump_Jr.",
+      "id": "http://schema.org/children",
+      "_rdfValue": "http://schema.org/children",
+      "_rdfType": "uri"
+    },
+    {
+      "source": "https://dbpedia.org/page/Donald_Trump",
+      "target": "https://dbpedia.org/page/Tiffany_Trump",
+      "id": "http://schema.org/children",
+      "_rdfValue": "http://schema.org/children",
+      "_rdfType": "uri"
+    },
+    {
+      "source": "https://dbpedia.org/page/Donald_Trump",
+      "target": "https://dbpedia.org/page/Ivanka_Trump",
+      "id": "http://schema.org/children",
+      "_rdfValue": "http://schema.org/children",
+      "_rdfType": "uri"
+    },
+    {
+      "source": "https://dbpedia.org/page/Donald_Trump",
+      "target": "https://dbpedia.org/page/The_Trump_Organization",
+      "id": "http://schema.org/worksFor",
+      "_rdfValue": "http://schema.org/worksFor",
+      "_rdfType": "uri"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "https://dbpedia.org/page/Donald_Trump",
+      "_rdfValue": "https://dbpedia.org/page/Donald_Trump",
+      "_rdfType": "uri",
+      "_radius": 352,
+      "_rdfsLabel": "Дональд Трамп",
+      "_linkCount": 9,
+      "_distanceFromRoot": 0
+    },
+    {
+      "id": "https://dbpedia.org/page/The_Trump_Organization",
+      "_rdfValue": "https://dbpedia.org/page/The_Trump_Organization",
+      "_rdfType": "uri",
+      "_radius": 352,
+      "_rdfsLabel": "The Trump Organization",
+      "_linkCount": 6,
+      "_distanceFromRoot": 1,
+      "_hidden": {
+        "nodes": [
+          {
+            "id": "https://dbpedia.org/page/Fred_Trump",
+            "_rdfValue": "https://dbpedia.org/page/Fred_Trump",
+            "_rdfType": "uri",
+            "_radius": 352,
+            "_rdfsLabel": "Фред Трамп",
+            "_linkCount": 7,
+            "_distanceFromRoot": 2,
+            "_hidden": {
+              "nodes": [
+                {
+                  "id": "https://dbpedia.org/page/Mary_Anne_MacLeod_Trump",
+                  "_rdfValue": "https://dbpedia.org/page/Mary_Anne_MacLeod_Trump",
+                  "_rdfType": "uri",
+                  "_radius": 352,
+                  "_rdfsLabel": "Мэри Трамп",
+                  "_linkCount": 6,
+                  "_distanceFromRoot": 3,
+                  "_hidden": {
+                    "nodes": [
+                      {
+                        "id": "Mary Trump7",
+                        "_rdfValue": "Mary Trump",
+                        "_rdfType": "literal",
+                        "_radius": 110,
+                        "_linkCount": 1,
+                        "_distanceFromRoot": 4
+                      },
+                      {
+                        "id": "Мэри Трамп8",
+                        "_rdfValue": "Мэри Трамп",
+                        "_rdfType": "literal",
+                        "_radius": 110,
+                        "_linkCount": 1,
+                        "_distanceFromRoot": 4
+                      },
+                      {
+                        "id": "1912-05-1010",
+                        "_rdfValue": "1912-05-10",
+                        "_rdfType": "literal",
+                        "_radius": 110,
+                        "_linkCount": 1,
+                        "_distanceFromRoot": 4
+                      }
+                    ],
+                    "links": [
+                      {
+                        "source": "https://dbpedia.org/page/Mary_Anne_MacLeod_Trump",
+                        "target": "Mary Trump7",
+                        "id": "http://www.w3.org/2000/01/rdf-schema#label",
+                        "_rdfValue": "http://www.w3.org/2000/01/rdf-schema#label",
+                        "_rdfType": "uri"
+                      },
+                      {
+                        "source": "https://dbpedia.org/page/Mary_Anne_MacLeod_Trump",
+                        "target": "Мэри Трамп8",
+                        "id": "http://www.w3.org/2000/01/rdf-schema#label",
+                        "_rdfValue": "http://www.w3.org/2000/01/rdf-schema#label",
+                        "_rdfType": "uri"
+                      },
+                      {
+                        "source": "https://dbpedia.org/page/Mary_Anne_MacLeod_Trump",
+                        "target": "1912-05-1010",
+                        "id": "http://schema.org/birthDate",
+                        "_rdfValue": "http://schema.org/birthDate",
+                        "_rdfType": "uri"
+                      }
+                    ]
+                  },
+                  "_isCollapsed": true
+                },
+                {
+                  "id": "Fred Trump5",
+                  "_rdfValue": "Fred Trump",
+                  "_rdfType": "literal",
+                  "_radius": 110,
+                  "_linkCount": 1,
+                  "_distanceFromRoot": 3
+                },
+                {
+                  "id": "Фред Трамп6",
+                  "_rdfValue": "Фред Трамп",
+                  "_rdfType": "literal",
+                  "_radius": 110,
+                  "_linkCount": 1,
+                  "_distanceFromRoot": 3
+                },
+                {
+                  "id": "1905-10-119",
+                  "_rdfValue": "1905-10-11",
+                  "_rdfType": "literal",
+                  "_radius": 110,
+                  "_linkCount": 1,
+                  "_distanceFromRoot": 3
+                }
+              ],
+              "links": [
+                {
+                  "source": "https://dbpedia.org/page/Mary_Anne_MacLeod_Trump",
+                  "target": "http://schema.org/Person",
+                  "id": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+                  "_rdfValue": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+                  "_rdfType": "uri"
+                },
+                {
+                  "source": "https://dbpedia.org/page/Mary_Anne_MacLeod_Trump",
+                  "target": "https://dbpedia.org/page/Fred_Trump",
+                  "id": "http://schema.org/spouse",
+                  "_rdfValue": "http://schema.org/spouse",
+                  "_rdfType": "uri"
+                },
+                {
+                  "source": "https://dbpedia.org/page/Fred_Trump",
+                  "target": "Fred Trump5",
+                  "id": "http://www.w3.org/2000/01/rdf-schema#label",
+                  "_rdfValue": "http://www.w3.org/2000/01/rdf-schema#label",
+                  "_rdfType": "uri"
+                },
+                {
+                  "source": "https://dbpedia.org/page/Fred_Trump",
+                  "target": "Фред Трамп6",
+                  "id": "http://www.w3.org/2000/01/rdf-schema#label",
+                  "_rdfValue": "http://www.w3.org/2000/01/rdf-schema#label",
+                  "_rdfType": "uri"
+                },
+                {
+                  "source": "https://dbpedia.org/page/Fred_Trump",
+                  "target": "https://dbpedia.org/page/Mary_Anne_MacLeod_Trump",
+                  "id": "http://schema.org/spouse",
+                  "_rdfValue": "http://schema.org/spouse",
+                  "_rdfType": "uri"
+                },
+                {
+                  "source": "https://dbpedia.org/page/Fred_Trump",
+                  "target": "1905-10-119",
+                  "id": "http://schema.org/birthDate",
+                  "_rdfValue": "http://schema.org/birthDate",
+                  "_rdfType": "uri"
+                }
+              ]
+            },
+            "_isCollapsed": true
+          },
+          {
+            "id": "http://schema.org/Organization",
+            "_rdfValue": "http://schema.org/Organization",
+            "_rdfType": "uri",
+            "_radius": 330,
+            "_linkCount": 1,
+            "_distanceFromRoot": 2
+          },
+          {
+            "id": "The Trump Organization4",
+            "_rdfValue": "The Trump Organization",
+            "_rdfType": "literal",
+            "_radius": 242,
+            "_linkCount": 1,
+            "_distanceFromRoot": 2
+          },
+          {
+            "id": "https://dbpedia.org/page/Elizabeth_Christ_Trump",
+            "_rdfValue": "https://dbpedia.org/page/Elizabeth_Christ_Trump",
+            "_rdfType": "uri",
+            "_radius": 352,
+            "_linkCount": 1,
+            "_distanceFromRoot": 2
+          },
+          {
+            "id": "tag:stardog:api:0.8481760081077631",
+            "_rdfValue": "tag:stardog:api:0.8481760081077631",
+            "_rdfType": "uri",
+            "_radius": 352,
+            "_linkCount": 1,
+            "_distanceFromRoot": 2
+          }
+        ],
+        "links": [
+          {
+            "source": "https://dbpedia.org/page/Fred_Trump",
+            "target": "http://schema.org/Person",
+            "id": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+            "_rdfValue": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+            "_rdfType": "uri"
+          },
+          {
+            "source": "https://dbpedia.org/page/The_Trump_Organization",
+            "target": "http://schema.org/Organization",
+            "id": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+            "_rdfValue": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+            "_rdfType": "uri"
+          },
+          {
+            "source": "https://dbpedia.org/page/The_Trump_Organization",
+            "target": "The Trump Organization4",
+            "id": "http://www.w3.org/2000/01/rdf-schema#label",
+            "_rdfValue": "http://www.w3.org/2000/01/rdf-schema#label",
+            "_rdfType": "uri"
+          },
+          {
+            "source": "https://dbpedia.org/page/The_Trump_Organization",
+            "target": "https://dbpedia.org/page/Fred_Trump",
+            "id": "http://schema.org/founder",
+            "_rdfValue": "http://schema.org/founder",
+            "_rdfType": "uri"
+          },
+          {
+            "source": "https://dbpedia.org/page/The_Trump_Organization",
+            "target": "https://dbpedia.org/page/Elizabeth_Christ_Trump",
+            "id": "http://schema.org/founder",
+            "_rdfValue": "http://schema.org/founder",
+            "_rdfType": "uri"
+          },
+          {
+            "source": "https://dbpedia.org/page/The_Trump_Organization",
+            "target": "tag:stardog:api:0.8481760081077631",
+            "id": "http://schema.org/identifier",
+            "_rdfValue": "http://schema.org/identifier",
+            "_rdfType": "uri"
+          }
+        ]
+      },
+      "_isCollapsed": true
+    },
+    {
+      "id": "http://schema.org/Person",
+      "_rdfValue": "http://schema.org/Person",
+      "_rdfType": "uri",
+      "_radius": 264,
+      "_linkCount": 3,
+      "_distanceFromRoot": 1
+    },
+    {
+      "id": "Donald Trump1",
+      "_rdfValue": "Donald Trump",
+      "_rdfType": "literal",
+      "_radius": 132,
+      "_linkCount": 1,
+      "_distanceFromRoot": 1
+    },
+    {
+      "id": "Donald Trump2",
+      "_rdfValue": "Donald Trump",
+      "_rdfType": "literal",
+      "_radius": 132,
+      "_linkCount": 1,
+      "_distanceFromRoot": 1
+    },
+    {
+      "id": "Дональд Трамп3",
+      "_rdfValue": "Дональд Трамп",
+      "_rdfType": "literal",
+      "_radius": 143,
+      "_linkCount": 1,
+      "_distanceFromRoot": 1
+    },
+    {
+      "id": "https://dbpedia.org/page/Eric_Trump",
+      "_rdfValue": "https://dbpedia.org/page/Eric_Trump",
+      "_rdfType": "uri",
+      "_radius": 352,
+      "_linkCount": 1,
+      "_distanceFromRoot": 1
+    },
+    {
+      "id": "https://dbpedia.org/page/Donald_Trump_Jr.",
+      "_rdfValue": "https://dbpedia.org/page/Donald_Trump_Jr.",
+      "_rdfType": "uri",
+      "_radius": 352,
+      "_linkCount": 1,
+      "_distanceFromRoot": 1
+    },
+    {
+      "id": "https://dbpedia.org/page/Tiffany_Trump",
+      "_rdfValue": "https://dbpedia.org/page/Tiffany_Trump",
+      "_rdfType": "uri",
+      "_radius": 352,
+      "_linkCount": 1,
+      "_distanceFromRoot": 1
+    },
+    {
+      "id": "https://dbpedia.org/page/Ivanka_Trump",
+      "_rdfValue": "https://dbpedia.org/page/Ivanka_Trump",
+      "_rdfType": "uri",
+      "_radius": 352,
+      "_linkCount": 1,
+      "_distanceFromRoot": 1
+    }
+  ],
+  "sparqlResults": [
+    {
+      "predicate": {
+        "type": "uri",
+        "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+      },
+      "subject": {
+        "type": "uri",
+        "value": "https://dbpedia.org/page/Donald_Trump"
+      },
+      "object": { "type": "uri", "value": "http://schema.org/Person" }
+    },
+    {
+      "predicate": {
+        "type": "uri",
+        "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+      },
+      "subject": {
+        "type": "uri",
+        "value": "https://dbpedia.org/page/Fred_Trump"
+      },
+      "object": { "type": "uri", "value": "http://schema.org/Person" }
+    },
+    {
+      "predicate": {
+        "type": "uri",
+        "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+      },
+      "subject": {
+        "type": "uri",
+        "value": "https://dbpedia.org/page/Mary_Anne_MacLeod_Trump"
+      },
+      "object": { "type": "uri", "value": "http://schema.org/Person" }
+    },
+    {
+      "predicate": {
+        "type": "uri",
+        "value": "http://www.w3.org/2000/01/rdf-schema#label"
+      },
+      "subject": {
+        "type": "uri",
+        "value": "https://dbpedia.org/page/Donald_Trump"
+      },
+      "object": { "xml:lang": "en", "type": "literal", "value": "Donald Trump" }
+    },
+    {
+      "predicate": {
+        "type": "uri",
+        "value": "http://www.w3.org/2000/01/rdf-schema#label"
+      },
+      "subject": {
+        "type": "uri",
+        "value": "https://dbpedia.org/page/Donald_Trump"
+      },
+      "object": { "xml:lang": "de", "type": "literal", "value": "Donald Trump" }
+    },
+    {
+      "predicate": {
+        "type": "uri",
+        "value": "http://www.w3.org/2000/01/rdf-schema#label"
+      },
+      "subject": {
+        "type": "uri",
+        "value": "https://dbpedia.org/page/Donald_Trump"
+      },
+      "object": {
+        "xml:lang": "ru",
+        "type": "literal",
+        "value": "Дональд Трамп"
+      }
+    },
+    {
+      "predicate": { "type": "uri", "value": "http://schema.org/children" },
+      "subject": {
+        "type": "uri",
+        "value": "https://dbpedia.org/page/Donald_Trump"
+      },
+      "object": {
+        "type": "uri",
+        "value": "https://dbpedia.org/page/Eric_Trump"
+      }
+    },
+    {
+      "predicate": { "type": "uri", "value": "http://schema.org/children" },
+      "subject": {
+        "type": "uri",
+        "value": "https://dbpedia.org/page/Donald_Trump"
+      },
+      "object": {
+        "type": "uri",
+        "value": "https://dbpedia.org/page/Donald_Trump_Jr."
+      }
+    },
+    {
+      "predicate": { "type": "uri", "value": "http://schema.org/children" },
+      "subject": {
+        "type": "uri",
+        "value": "https://dbpedia.org/page/Donald_Trump"
+      },
+      "object": {
+        "type": "uri",
+        "value": "https://dbpedia.org/page/Tiffany_Trump"
+      }
+    },
+    {
+      "predicate": { "type": "uri", "value": "http://schema.org/children" },
+      "subject": {
+        "type": "uri",
+        "value": "https://dbpedia.org/page/Donald_Trump"
+      },
+      "object": {
+        "type": "uri",
+        "value": "https://dbpedia.org/page/Ivanka_Trump"
+      }
+    },
+    {
+      "predicate": { "type": "uri", "value": "http://schema.org/worksFor" },
+      "subject": {
+        "type": "uri",
+        "value": "https://dbpedia.org/page/Donald_Trump"
+      },
+      "object": {
+        "type": "uri",
+        "value": "https://dbpedia.org/page/The_Trump_Organization"
+      }
+    },
+    {
+      "predicate": {
+        "type": "uri",
+        "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+      },
+      "subject": {
+        "type": "uri",
+        "value": "https://dbpedia.org/page/The_Trump_Organization"
+      },
+      "object": { "type": "uri", "value": "http://schema.org/Organization" }
+    },
+    {
+      "predicate": {
+        "type": "uri",
+        "value": "http://www.w3.org/2000/01/rdf-schema#label"
+      },
+      "subject": {
+        "type": "uri",
+        "value": "https://dbpedia.org/page/The_Trump_Organization"
+      },
+      "object": {
+        "xml:lang": "en",
+        "type": "literal",
+        "value": "The Trump Organization"
+      }
+    },
+    {
+      "predicate": { "type": "uri", "value": "http://schema.org/founder" },
+      "subject": {
+        "type": "uri",
+        "value": "https://dbpedia.org/page/The_Trump_Organization"
+      },
+      "object": {
+        "type": "uri",
+        "value": "https://dbpedia.org/page/Fred_Trump"
+      }
+    },
+    {
+      "predicate": { "type": "uri", "value": "http://schema.org/spouse" },
+      "subject": {
+        "type": "uri",
+        "value": "https://dbpedia.org/page/Mary_Anne_MacLeod_Trump"
+      },
+      "object": {
+        "type": "uri",
+        "value": "https://dbpedia.org/page/Fred_Trump"
+      }
+    },
+    {
+      "predicate": { "type": "uri", "value": "http://schema.org/founder" },
+      "subject": {
+        "type": "uri",
+        "value": "https://dbpedia.org/page/The_Trump_Organization"
+      },
+      "object": {
+        "type": "uri",
+        "value": "https://dbpedia.org/page/Elizabeth_Christ_Trump"
+      }
+    },
+    {
+      "predicate": {
+        "type": "uri",
+        "value": "http://www.w3.org/2000/01/rdf-schema#label"
+      },
+      "subject": {
+        "type": "uri",
+        "value": "https://dbpedia.org/page/Fred_Trump"
+      },
+      "object": { "xml:lang": "en", "type": "literal", "value": "Fred Trump" }
+    },
+    {
+      "predicate": {
+        "type": "uri",
+        "value": "http://www.w3.org/2000/01/rdf-schema#label"
+      },
+      "subject": {
+        "type": "uri",
+        "value": "https://dbpedia.org/page/Fred_Trump"
+      },
+      "object": { "xml:lang": "ru", "type": "literal", "value": "Фред Трамп" }
+    },
+    {
+      "predicate": { "type": "uri", "value": "http://schema.org/spouse" },
+      "subject": {
+        "type": "uri",
+        "value": "https://dbpedia.org/page/Fred_Trump"
+      },
+      "object": {
+        "type": "uri",
+        "value": "https://dbpedia.org/page/Mary_Anne_MacLeod_Trump"
+      }
+    },
+    {
+      "predicate": {
+        "type": "uri",
+        "value": "http://www.w3.org/2000/01/rdf-schema#label"
+      },
+      "subject": {
+        "type": "uri",
+        "value": "https://dbpedia.org/page/Mary_Anne_MacLeod_Trump"
+      },
+      "object": { "xml:lang": "en", "type": "literal", "value": "Mary Trump" }
+    },
+    {
+      "predicate": {
+        "type": "uri",
+        "value": "http://www.w3.org/2000/01/rdf-schema#label"
+      },
+      "subject": {
+        "type": "uri",
+        "value": "https://dbpedia.org/page/Mary_Anne_MacLeod_Trump"
+      },
+      "object": { "xml:lang": "ru", "type": "literal", "value": "Мэри Трамп" }
+    },
+    {
+      "predicate": { "type": "uri", "value": "http://schema.org/identifier" },
+      "subject": {
+        "type": "uri",
+        "value": "https://dbpedia.org/page/The_Trump_Organization"
+      },
+      "object": { "type": "uri", "value": "tag:stardog:api:0.8481760081077631" }
+    },
+    {
+      "predicate": { "type": "uri", "value": "http://schema.org/birthDate" },
+      "subject": {
+        "type": "uri",
+        "value": "https://dbpedia.org/page/Fred_Trump"
+      },
+      "object": {
+        "datatype": "http://www.w3.org/2001/XMLSchema#date",
+        "type": "literal",
+        "value": "1905-10-11"
+      }
+    },
+    {
+      "predicate": { "type": "uri", "value": "http://schema.org/birthDate" },
+      "subject": {
+        "type": "uri",
+        "value": "https://dbpedia.org/page/Mary_Anne_MacLeod_Trump"
+      },
+      "object": {
+        "datatype": "http://www.w3.org/2001/XMLSchema#date",
+        "type": "literal",
+        "value": "1912-05-10"
+      }
+    }
+  ],
+  "prefixes": "@prefix madsrdf:    <http://www.loc.gov/mads/rdf/v1#>.\n@prefix bflc:       <http://id.loc.gov/ontologies/bflc/>.\n@prefix foaf:       <http://xmlns.com/foaf/0.1/>.\n@prefix rdf:        <http://www.w3.org/1999/02/22-rdf-syntax-ns#>.\n@prefix rdfs:       <http://www.w3.org/2000/01/rdf-schema#>.\n@prefix yago:       <http://yago-knowledge.org/resource/>.\n@prefix dbo:        <http://dbpedia.org/ontology/>.\n@prefix dbp:        <http://dbpedia.org/property/>.\n@prefix ex:         <http://example.org/>.\n@prefix dc:         <http://purl.org/dc/elements/1.1/>.\n@prefix owl:        <http://www.w3.org/2002/07/owl#>.\n@prefix gr:         <http://purl.org/goodrelations/v1#>.\n@prefix spacerel:   <http://data.ordnancesurvey.co.uk/ontology/spatialrelations/>.\n@prefix skos:       <http://www.w3.org/2004/02/skos/core#>.\n@prefix geo:        <http://www.opengis.net/ont/geosparql#>.\n@prefix xsd:        <http://www.w3.org/2001/XMLSchema#>.\n@prefix dcat:       <http://www.w3.org/ns/dcat#>.\n@prefix schema:     <http://schema.org/>.\n@prefix bf:         <http://id.loc.gov/ontologies/bibframe/>.\n@prefix org:        <http://www.w3.org/ns/org#>.\n@prefix dct:        <http://purl.org/dc/terms/>.\n@prefix qb:         <http://purl.org/linked-data/cube#>.\n@prefix search:     <http://sindice.com/vocab/search#>.\n@prefix dcterms:    <http://purl.org/dc/terms/>.\n@prefix sd:         <http://www.w3.org/ns/sparql-service-description#>.\n@prefix prov:       <http://www.w3.org/ns/prov#>.\n@prefix frbr:       <http://purl.org/vocab/frbr/core#>.\n@prefix sioc:       <http://rdfs.org/sioc/ns#>.\n@prefix stat:       <http://www.w3.org/ns/posix/stat#>.\n@prefix xtypes:     <http://purl.org/xtypes/>.\n@prefix ont:        <http://purl.org/net/ns/ontology-annot#>.\n@prefix dbpedia:    <http://dbpedia.org/resource/>.\n@prefix void:       <http://rdfs.org/ns/void#>.\n@prefix vcard:      <http://www.w3.org/2006/vcard/ns#>.\n@prefix commerce:   <http://search.yahoo.com/searchmonkey/commerce/>.\n@prefix onto:       <http://www.ontotext.com/>.\n@prefix rss:        <http://purl.org/rss/1.0/>.\n@prefix bibo:       <http://purl.org/ontology/bibo/>.\n@prefix gldp:       <http://www.w3.org/ns/people#>.\n@prefix sio:        <http://semanticscience.org/resource/>.\n@prefix dbr:        <http://dbpedia.org/resource/>.\n@prefix geonames:   <http://www.geonames.org/ontology#>.\n@prefix event:      <http://purl.org/NET/c4dm/event.owl#>.\n@prefix pto:        <http://www.productontology.org/id/>.\n@prefix fb:         <http://rdf.freebase.com/ns/>.\n@prefix wd:         <http://www.wikidata.org/entity/>.\n@prefix dcmit:      <http://purl.org/dc/dcmitype/>.\n@prefix oo:         <http://purl.org/openorg/>.\n@prefix cc:         <http://creativecommons.org/ns#>.\n@prefix doap:       <http://usefulinc.com/ns/doap#>.\n@prefix gen:        <http://purl.org/gen/0.1#>.\n@prefix md:         <http://www.w3.org/ns/md#>.\n@prefix content:    <http://purl.org/rss/1.0/modules/content/>.\n@prefix rr:         <http://www.w3.org/ns/r2rml#>.\n@prefix sc:         <http://purl.org/science/owl/sciencecommons/>.\n@prefix obo:        <http://purl.obolibrary.org/obo/>.\n@prefix dbpprop:    <http://dbpedia.org/property/>.\n@prefix http:       <http://www.w3.org/2011/http#>.\n@prefix swrc:       <http://swrc.ontoware.org/ontology#>.\n@prefix vann:       <http://purl.org/vocab/vann/>.\n@prefix prog:       <http://purl.org/prog/>.\n@prefix nie:        <http://www.semanticdesktop.org/ontologies/2007/01/19/nie#>.\n@prefix ma:         <http://www.w3.org/ns/ma-ont#>.\n@prefix dcterm:     <http://purl.org/dc/terms/>.\n@prefix wot:        <http://xmlns.com/wot/0.1/>.\n@prefix tl:         <http://purl.org/NET/c4dm/timeline.owl#>.\n@prefix akt:        <http://www.aktors.org/ontology/portal#>.\n@prefix fn:         <http://www.w3.org/2005/xpath-functions#>.\n@prefix ov:         <http://open.vocab.org/terms/>.\n@prefix cv:         <http://rdfs.org/resume-rdf/>.\n@prefix swc:        <http://data.semanticweb.org/ns/swc/ontology#>.\n@prefix aiiso:      <http://purl.org/vocab/aiiso/schema#>.\n@prefix vs:         <http://www.w3.org/2003/06/sw-vocab-status/ns#>.\n@prefix crm:        <http://www.cidoc-crm.org/cidoc-crm/>.\n@prefix ical:       <http://www.w3.org/2002/12/cal/ical#>.\n@prefix marcrel:    <http://id.loc.gov/vocabulary/relators/>.\n@prefix xhtml:      <http://www.w3.org/1999/xhtml#>.\n@prefix earl:       <http://www.w3.org/ns/earl#>.\n@prefix daia:       <http://purl.org/ontology/daia/>.\n@prefix mo:         <http://purl.org/ontology/mo/>.\n@prefix rel:        <http://purl.org/vocab/relationship/>.\n@prefix bio:        <http://purl.org/vocab/bio/0.1/>.\n@prefix dbowl:      <http://ontology.cybershare.utep.edu/dbowl/relational-to-ontology-mapping-primitive.owl#>.\n@prefix prop:       <http://dbpedia.org/property/>.\n@prefix rdfg:       <http://www.w3.org/2004/03/trix/rdfg-1/>.\n@prefix ad:         <http://schemas.talis.com/2005/address/schema#>.\n@prefix cs:         <http://purl.org/vocab/changeset/schema#>.\n@prefix dc11:       <http://purl.org/dc/elements/1.1/>.\n@prefix xmp:        <http://ns.adobe.com/xap/1.0/>.\n@prefix bill:       <http://www.rdfabout.com/rdf/schema/usbill/>.\n@prefix dv:         <http://rdf.data-vocabulary.org/#>.\n@prefix dcam:       <http://purl.org/dc/dcam/>.\n@prefix test2:      <http://this.invalid/test2#>.\n@prefix factbook:   <http://wifo5-04.informatik.uni-mannheim.de/factbook/ns#>.\n@prefix xhv:        <http://www.w3.org/1999/xhtml/vocab#>.\n@prefix co:         <http://purl.org/ontology/co/core#>.\n@prefix air:        <http://dig.csail.mit.edu/TAMI/2007/amord/air#>.\n@prefix og:         <http://ogp.me/ns#>.\n@prefix musim:      <http://purl.org/ontology/similarity/>.\n@prefix xs:         <http://www.w3.org/2001/XMLSchema#>.\n@prefix log:        <http://www.w3.org/2000/10/swap/log#>.\n@prefix media:      <http://search.yahoo.com/searchmonkey/media/>.\n@prefix ir:         <http://www.ontologydesignpatterns.org/cp/owl/informationrealization.owl#>.\n@prefix afn:        <http://jena.hpl.hp.com/ARQ/function#>.\n@prefix d2rq:       <http://www.wiwiss.fu-berlin.de/suhl/bizer/D2RQ/0.1#>.\n@prefix book:       <http://purl.org/NET/book/vocab#>.\n@prefix mu:         <http://mu.semte.ch/vocabularies/core/>.\n@prefix admin:      <http://webns.net/mvcb/>.\n@prefix xfn:        <http://gmpg.org/xfn/11#>.\n@prefix biblio:     <http://purl.org/net/biblio#>.\n@prefix ctag:       <http://commontag.org/ns#>.\n@prefix sism:       <http://purl.oclc.org/NET/sism/0.1/>.\n@prefix pc:         <http://purl.org/procurement/public-contracts#>.\n@prefix xf:         <http://www.w3.org/2002/xforms/>.\n@prefix botany:     <http://purl.org/NET/biol/botany#>.\n@prefix tag:        <http://www.holygoat.co.uk/owl/redwood/0.1/tags/>.\n@prefix days:       <http://ontologi.es/days#>.\n@prefix dcq:        <http://purl.org/dc/qualifiers/1.0/>.\n@prefix tzont:      <http://www.w3.org/2006/timezone#>.\n@prefix cld:        <http://purl.org/cld/terms/>.\n@prefix dir:        <http://schemas.talis.com/2005/dir/schema#>.\n@prefix reco:       <http://purl.org/reco#>.\n@prefix cal:        <http://www.w3.org/2002/12/cal/ical#>.\n@prefix unit:       <http://qudt.org/vocab/unit/>.\n@prefix time:       <http://www.w3.org/2006/time#>.\n@prefix rif:        <http://www.w3.org/2007/rif#>.\n@prefix myspace:    <http://purl.org/ontology/myspace#>.\n@prefix osag:       <http://www.ordnancesurvey.co.uk/ontology/AdministrativeGeography/v2.0/AdministrativeGeography.rdf#>.\n@prefix af:         <http://purl.org/ontology/af/>.\n@prefix ome:        <http://purl.org/ontomedia/core/expression#>.\n@prefix sr:         <http://www.openrdf.org/config/repository/sail#>.\n@prefix cmp:        <http://www.ontologydesignpatterns.org/cp/owl/componency.owl#>.\n@prefix rev:        <http://purl.org/stuff/rev#>.\n@prefix memo:       <http://ontologies.smile.deri.ie/2009/02/27/memo#>.\n@prefix sdmx:       <http://purl.org/linked-data/sdmx#>.\n@prefix math:       <http://www.w3.org/2000/10/swap/math#>.\n@prefix giving:     <http://ontologi.es/giving#>.\n@prefix jdbc:       <http://d2rq.org/terms/jdbc/>.\n@prefix qudt:       <http://qudt.org/schema/qudt/>.\n@prefix con:        <http://www.w3.org/2000/10/swap/pim/contact#>.\n@prefix dcn:        <http://www.w3.org/2007/uwa/context/deliverycontext.owl#>.\n@prefix ok:         <http://okkam.org/terms#>.\n@prefix swanq:      <http://purl.org/swan/1.2/qualifiers/>.\n@prefix cyc:        <http://sw.opencyc.org/concept/>.\n@prefix swande:     <http://purl.org/swan/1.2/discourse-elements/>.\n@prefix owlim:      <http://www.ontotext.com/trree/owlim#>.\n@prefix lomvoc:     <http://ltsc.ieee.org/rdf/lomv1p0/vocabulary#>.\n@prefix as:         <https://www.w3.org/ns/activitystreams#>.\n@prefix cfp:        <http://sw.deri.org/2005/08/conf/cfp.owl#>.\n@prefix gn:         <http://www.geonames.org/ontology#>.\n@prefix oa:         <http://www.w3.org/ns/oa#>.\n@prefix sdmxdim:    <http://purl.org/linked-data/sdmx/2009/dimension#>.\n@prefix omn:        <http://open-multinet.info/ontology/omn#>.\n@prefix cdm:        <http://publications.europa.eu/ontology/cdm#>.\n@prefix lyou:       <http://purl.org/linkingyou/>.\n@prefix photoshop:  <http://ns.adobe.com/photoshop/1.0/>.\n@prefix wfs:        <http://schemas.opengis.net/wfs/>.\n@prefix skosxl:     <http://www.w3.org/2008/05/skos-xl#>.\n@prefix exif:       <http://www.w3.org/2003/12/exif/ns#>.\n@prefix om:         <http://opendata.caceres.es/def/ontomunicipio#>.\n@prefix type:       <https://webiomed.ai/blog/obzor-rossiiskikh-sistem-podderzhki-priniatiia-vrachebnykh-reshenii/>.\n@prefix sdmxa:      <http://purl.org/linked-data/sdmx/2009/attribute#>.\n@prefix openlinks:  <http://www.openlinksw.com/schemas/virtrdf#>.\n@prefix xsi:        <http://www.w3.org/2001/XMLSchema-instance#>."
+}

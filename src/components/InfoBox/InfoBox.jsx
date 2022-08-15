@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import "./InfoBox.css";
 import close_black from "../shared/images/close_black.svg";
 import { resolvePrefixesInStatement } from "../../helpers/rdf-utils";
@@ -10,10 +10,12 @@ export default function InfoBox({
   visible,
   setVisible,
   prefixes,
+  info,
 }) {
+  const infoBox = useRef();
   useEffect(() => {
-    document.getElementById("info-box")?.focus();
-  });
+    infoBox.current?.focus();
+  }, []);
 
   const valueText =
     type === "uri" ? (
@@ -34,6 +36,7 @@ export default function InfoBox({
       id="info-box"
       /*onBlur={(blurEvent) => blurEvent.target.id !== "info-box" && setVisible(false)
       }*/
+      ref={infoBox}
     >
       <span
         className="circular-button active"
@@ -41,9 +44,10 @@ export default function InfoBox({
       >
         <img className="button-icon" src={close_black} alt={"Close"} />
       </span>
-      <div>Type: {type}</div>
-      <div>Value: {valueText}</div>
+      {type != null && <div>Type: {type}</div>}
+      {value != null && <div>Value: {valueText}</div>}
       {label != null && <div>Label: {label}</div>}
+      {info != null && <div>{info}</div>}
     </div>
   ) : null;
 }
