@@ -1,13 +1,24 @@
 import React, { useEffect, useState } from "react";
 import "./Main.css";
-import { RdfGraph, SettingsView } from "..";
+import { RdfGraph, SettingsView, InfoBox } from "..";
 import {
   createSPOFilterListFromText,
   parseTtlPrefixes,
 } from "../../helpers/rdf-utils";
 
-export default function Main({ view, settings, graphData, setSimulationData, setView }) {
+export default function Main({
+  view,
+  settings,
+  graphData,
+  setSimulationData,
+  setView,
+  showInfo,
+  infoBoxVisible,
+  infoMessage,
+  setInfoBoxVisible,
+}) {
   const [isLoading, setIsLoading] = useState(true);
+
   useEffect(() => {
     if (view === "settings") setIsLoading(false);
   }, [view]);
@@ -30,8 +41,18 @@ export default function Main({ view, settings, graphData, setSimulationData, set
           setIsLoading={setIsLoading}
           setView={setView}
           preferredSourceNode={settings.preferredSourceNode.value}
+          showInfo={showInfo}
         />
       )}
+      <InfoBox
+        type={infoMessage?.type}
+        value={infoMessage?.value}
+        label={infoMessage?.label}
+        info={infoMessage?.info}
+        prefixes={parseTtlPrefixes(settings.prefixes.value)}
+        visible={infoBoxVisible}
+        setVisible={setInfoBoxVisible}
+      />
     </div>
   );
 }

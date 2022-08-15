@@ -56,6 +56,16 @@ export function loadGraph({
     whitelist,
   });
 
+  showInfo({
+    info: (
+      <>
+        <div>Number of fetched triples: {graphData.length}</div>
+        <div>Number of nodes: {d3Graph.nodes.length}</div>
+        <div>Number of links: {d3Graph.links.length}</div>
+      </>
+    ),
+  });
+
   let { nodes, links, sourceNode, status } = convertUnstructuredGraphToLayered({
     d3Graph,
     nodeCapacity,
@@ -64,10 +74,10 @@ export function loadGraph({
 
   if (!status.ok) {
     if (status.reason === "preferredSourceNodeNotFound") {
-      alert("The specified source node could not be found");
+      showInfo({ info: "The specified source node could not be found" });
       return setView("settings");
     } else if (status.reason === "emptyGraph") {
-      alert("The current configuration results in an empty graph");
+      showInfo({ info: "The current configuration results in an empty graph" });
       return setView("settings");
     }
   }
