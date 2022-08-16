@@ -272,6 +272,7 @@ function App() {
         validSettingsExist={validSettingsExist}
         saveSettings={saveSettings}
         restartSimulation={restartSimulation}
+        simulationData={simulationData}
       />
     </div>
   );

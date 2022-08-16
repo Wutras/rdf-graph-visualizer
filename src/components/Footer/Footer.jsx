@@ -1,13 +1,31 @@
 import React from "react";
-import { CircularIconButton } from "..";
+import { CircularIconButton, InfoBox } from "..";
 import "./Footer.css";
 import settings_black from "../shared/images/settings_black.svg";
 import save_black from "../shared/images/save_black.svg";
+import {
+  parseTtlPrefixes,
+  resolvePrefixesInStatement,
+} from "../../helpers/rdf-utils";
 
-export default function Footer({ setView, view, validSettingsExist, saveSettings, restartSimulation }) {
+export default function Footer({
+  setView,
+  view,
+  validSettingsExist,
+  saveSettings,
+  simulationData,
+}) {
   return (
     <div className="footer">
-      <button onClick={() => restartSimulation()}>Reset</button>
+      {view === "main" && simulationData && (
+        <span>
+          <div>
+            Number of fetched triples: {simulationData.graphData.length}
+          </div>
+          <div>Number of nodes: {simulationData.d3Graph.nodes.length}</div>
+          <div>Number of links: {simulationData.d3Graph.links.length}</div>
+        </span>
+      )}
       {view === "settings" ? (
         <CircularIconButton
           style={{
@@ -15,8 +33,8 @@ export default function Footer({ setView, view, validSettingsExist, saveSettings
           }}
           active={validSettingsExist}
           onClick={() => {
-              setView("main");
-              saveSettings();
+            setView("main");
+            saveSettings();
           }}
           icon={save_black}
           alt={"Save"}

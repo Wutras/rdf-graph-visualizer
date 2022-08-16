@@ -1,5 +1,5 @@
 :root {
     --primary-color: rgb(158, 204, 79);
     --inactive-color: rgb(200, 200, 200);
-    --header-footer-height: 50px;
+    --header-footer-height: 4rem;
 }
