@@ -56,16 +56,6 @@ export function loadGraph({
     whitelist,
   });
 
-  showInfo({
-    info: (
-      <>
-        <div>Number of fetched triples: {graphData.length}</div>
-        <div>Number of nodes: {d3Graph.nodes.length}</div>
-        <div>Number of links: {d3Graph.links.length}</div>
-      </>
-    ),
-  });
-
   let { nodes, links, sourceNode, status } = convertUnstructuredGraphToLayered({
     d3Graph,
     nodeCapacity,
@@ -80,7 +70,9 @@ export function loadGraph({
       showInfo({
         info: (
           <>
-            <div>Warning! The current configuration results in an empty graph.</div>
+            <div>
+              Warning! The current configuration results in an empty graph.
+            </div>
             <div>Number of fetched triples: {graphData.length}</div>
             <div>Number of nodes: {d3Graph.nodes.length}</div>
             <div>Number of links: {d3Graph.links.length}</div>
@@ -234,6 +226,8 @@ export function loadGraph({
   setSimulationData({
     node,
     simulation,
+    d3Graph,
+    graphData
   });
 
   const drag_handler = d3

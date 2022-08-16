@@ -48,7 +48,7 @@ export default function Main({
         type={infoMessage?.type}
         value={infoMessage?.value}
         label={infoMessage?.label}
-        info={infoMessage?.info}
+        info={infoMessage.info}
         prefixes={parseTtlPrefixes(settings.prefixes.value)}
         visible={infoBoxVisible}
         setVisible={setInfoBoxVisible}

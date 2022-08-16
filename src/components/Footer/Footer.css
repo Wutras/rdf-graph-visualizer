@@ -4,12 +4,11 @@
   display: grid;
 }
 
-.footer > button {
+.footer > span {
   position: absolute;
-  width: 20vh;
+  width: fit-content;
   height: var(--header-footer-height);
   border-top-right-radius: 10px;
   border-top-left-radius: 10px;
-  font-size: x-large;
   background-color: var(--primary-color);
 }
