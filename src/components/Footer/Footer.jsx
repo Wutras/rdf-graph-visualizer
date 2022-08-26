@@ -19,11 +19,11 @@ export default function Footer({
     <div className="footer">
       {view === "main" && simulationData && (
         <span>
-          <div>
+          <span>
             Number of fetched triples: {simulationData.graphData.length}
-          </div>
-          <div>Number of nodes: {simulationData.d3Graph.nodes.length}</div>
-          <div>Number of links: {simulationData.d3Graph.links.length}</div>
+          </span>
+          <span>Number of nodes: {simulationData.d3Graph.nodes.length}</span>
+          <span>Number of links: {simulationData.d3Graph.links.length}</span>
         </span>
       )}
       {view === "settings" ? (
