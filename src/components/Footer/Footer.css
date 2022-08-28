@@ -12,3 +12,11 @@
   border-top-left-radius: 10px;
   background-color: var(--primary-color);
 }
+
+.footer > .statistics {
+  max-width: 75%;
+}
+
+.footer > .statistics > * {
+  padding-right: 1rem;
+}
