@@ -18,7 +18,7 @@ export default function Footer({
   return (
     <div className="footer">
       {view === "main" && simulationData && (
-        <span>
+        <span className="statistics">
           <span>
             Number of fetched triples: {simulationData.graphData.length}
           </span>
